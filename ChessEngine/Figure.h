@@ -39,5 +39,13 @@ public:
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 };
 
+class Rook : public Figure
+{
+public:
+    Rook(EColor color, ESquare square, int cost = cost_default::ROOK) :
+        Figure(color, EFigure::ROOK, square, cost) {}
+    virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
+};
+
 #endif // !FIGURE_H_
 
