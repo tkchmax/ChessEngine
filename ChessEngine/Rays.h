@@ -1,7 +1,9 @@
 #pragma once
 #ifndef RAYS_H_
+#define RAYS_H_
 
 #include <array>
+#include "EDirection.h"
 
 class Rays
 {

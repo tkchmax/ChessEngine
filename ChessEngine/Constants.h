@@ -6,6 +6,8 @@
 #include <stdint.h>
 
 using U64 = uint64_t;
+using U32 = uint32_t;
+
 namespace bitboards
 {
     constexpr U64 NOT_H_FILE = ~0x8080808080808080;
