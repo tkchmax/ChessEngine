@@ -141,10 +141,13 @@
   <ItemGroup>
     <ClCompile Include="Constants.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Misc.cpp" />
+    <ClCompile Include="Rays.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h" />
     <ClInclude Include="Misc.h" />
+    <ClInclude Include="Rays.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
