@@ -1,10 +1,5 @@
 #include "Move.h"
 
-Move::Move(ESquare from, ESquare to, EFigure figure, EFigure capture, EMoveType move_type, EColor color)
-{
-    Move(ToInt(from), ToInt(to), ToInt(figure), ToInt(capture), ToInt(move_type), ToInt(color));
-}
-
 Move::Move(int from, int to, int figure, int capture, int move_type, int color)
 {
     move = 0;

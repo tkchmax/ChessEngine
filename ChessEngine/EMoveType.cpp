@@ -1,15 +1,8 @@
 #include "EMoveType.h"
 #include <cassert>
 
-int ToInt(EMoveType move_type)
-{
-    assert(move_type != EMoveType::SIZE);
-    return static_cast<int>(move_type);
-}
-
 std::string ToString(EMoveType move_type)
 {
-    assert(move_type != EMoveType::SIZE);
     switch (move_type)
     {
         case EMoveType::SILENT: return "SILENT_MOVE";

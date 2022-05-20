@@ -140,11 +140,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Constants.cpp" />
-    <ClCompile Include="EColor.cpp" />
-    <ClCompile Include="EDirection.cpp" />
-    <ClCompile Include="EFigure.cpp" />
     <ClCompile Include="EMoveType.cpp" />
-    <ClCompile Include="ESquare.cpp" />
+    <ClCompile Include="Figure.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="Move.cpp" />
@@ -157,6 +154,7 @@
     <ClInclude Include="EFigure.h" />
     <ClInclude Include="EMoveType.h" />
     <ClInclude Include="ESquare.h" />
+    <ClInclude Include="Figure.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="Rays.h" />

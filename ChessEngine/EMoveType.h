@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-enum class EMoveType
+enum EMoveType
 {
     SILENT,
     CAPTURE,
@@ -10,9 +10,7 @@ enum class EMoveType
     TWO_SQUARE_PAWN_MOVE,
     PAWN_TO_KNIGHT,
     PAWN_TO_BISHOP,
-    PAWN_TO_QUEEN,
-    SIZE
+    PAWN_TO_QUEEN
 };
 
-int ToInt(EMoveType);
 std::string ToString(EMoveType);

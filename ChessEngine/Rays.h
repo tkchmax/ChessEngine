@@ -3,16 +3,18 @@
 #define RAYS_H_
 
 #include <array>
+#include "Constants.h"
 #include "EDirection.h"
+#include "ESquare.h"
 
 class Rays
 {
 public:
-    using RaysArray = std::array<std::array<std::uint64_t, 64>, 8>;
+    using RaysArray = std::array<std::array<U64, 64>, 8>;
 
     static const Rays& Get();
 
-    RaysArray GetRays() const { return rays; }
+    const RaysArray& GetRays() const { return rays; }
 private:
     Rays();
     Rays(const Rays&) = delete;

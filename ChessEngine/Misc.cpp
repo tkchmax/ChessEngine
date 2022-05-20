@@ -20,3 +20,25 @@ void misc::ShowBits(const U64& bitboard)
 	}
 	std::cout << std::endl << std::endl;
 }
+
+unsigned long misc::BitScanForward(const U64& mask)
+{
+	unsigned long index;
+	unsigned char isNonzero;
+	isNonzero = _BitScanForward64(&index, mask);
+
+	if (!isNonzero)
+		throw std::exception("empty mask");
+	return index;
+}
+
+unsigned long misc::BitScanReverse(const U64& mask)
+{
+	unsigned long index;
+	unsigned char isNonzero;
+	isNonzero = _BitScanReverse64(&index, mask);
+
+	if (!isNonzero)
+		throw std::exception("empty mask");
+	return index;
+}

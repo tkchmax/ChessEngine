@@ -1,5 +1,5 @@
 #pragma once
-enum class EDirection
+enum EDirection
 {
     NORTH,
     WEST,
@@ -8,9 +8,6 @@ enum class EDirection
     NORTH_EAST,
     NORTH_WEST,
     SOUTH_WEST,
-    SOUTH_EAST,
-    SIZE
+    SOUTH_EAST
 };
-
-int ToInt(EDirection);
 

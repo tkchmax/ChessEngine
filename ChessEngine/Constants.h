@@ -8,6 +8,8 @@
 using U64 = uint64_t;
 using U32 = uint32_t;
 
+#define INF 0x7FFFFFFF
+
 namespace bitboards
 {
     constexpr U64 NOT_H_FILE = ~0x8080808080808080;
@@ -37,17 +39,14 @@ namespace bitboards
     }
 }
 
-namespace directions
+namespace cost_default
 {
-    constexpr unsigned int NORTH = 0;
-    constexpr unsigned int WEST = 1;
-    constexpr unsigned int SOUTH = 2;
-    constexpr unsigned int EAST = 3;
-    constexpr unsigned int NORTH_EAST = 4;
-    constexpr unsigned int NORTH_WEST = 5;
-    constexpr unsigned int SOUTH_WEST = 6;
-    constexpr unsigned int SOUTH_EAST = 7;
+    constexpr int PAWN = 100;
+    constexpr int KNIGHT = 300;
+    constexpr int BISHOP = 301;
+    constexpr int ROOK = 500;
+    constexpr int QUEEN = 1000;
+    constexpr int KING = INF;
 }
-
 #endif // !CONSTANTS_H_
 

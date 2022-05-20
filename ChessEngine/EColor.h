@@ -1,9 +1,7 @@
 #pragma once
-enum class EColor
+enum EColor
 {
     WHITE,
-    BLACK,
-    SIZE
+    BLACK
 };
 
-int ToInt(EColor);

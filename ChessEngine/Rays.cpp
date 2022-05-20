@@ -33,7 +33,7 @@ Rays::Rays()
 	//North
 	for (int i = 0; i < 64; ++i, north <<= 1)
 	{
-		rays[ToInt(EDirection::NORTH)][i] = north;
+		rays[EDirection::NORTH][i] = north;
 	}
 
 	//West
@@ -43,14 +43,14 @@ Rays::Rays()
 		west = _hOut(west);
 		for (int y = 63; y >= 0; y -= 8, w >>= 8)
 		{
-			rays[ToInt(EDirection::WEST)][y - x] = w;
+			rays[EDirection::WEST][y - x] = w;
 		}
 	}
 
 	//South
 	for (int i = 63; i >= 0; --i, south >>= 1)
 	{
-		rays[ToInt(EDirection::SOUTH)][i] = south;
+		rays[EDirection::SOUTH][i] = south;
 	}
 
 	//East
@@ -60,7 +60,7 @@ Rays::Rays()
 		east = _aOut(east);
 		for (int y = 0; y < 64; y += 8, e <<= 8)
 		{
-			rays[ToInt(EDirection::EAST)][x + y] = e;
+			rays[EDirection::EAST][x + y] = e;
 		}
 	}
 
@@ -71,7 +71,7 @@ Rays::Rays()
 		north_east = _aOut(north_east);
 		for (int x = 0; x < 64; x += 8, ne <<= 8)
 		{
-			rays[ToInt(EDirection::NORTH_EAST)][x + y] = ne;
+			rays[EDirection::NORTH_EAST][x + y] = ne;
 		}
 	}
 
@@ -82,7 +82,7 @@ Rays::Rays()
 		north_west = _hOut(north_west);
 		for (int y = 0; y < 64; y += 8, nw <<= 8)
 		{
-			rays[ToInt(EDirection::NORTH_WEST)][y + x] = nw;
+			rays[EDirection::NORTH_WEST][y + x] = nw;
 		}
 	}
 
@@ -93,7 +93,7 @@ Rays::Rays()
 		south_west = _hOut(south_west);
 		for (int y = 63; y >= 0; y -= 8, sw >>= 8)
 		{
-			rays[ToInt(EDirection::SOUTH_WEST)][y - x] = sw;
+			rays[EDirection::SOUTH_WEST][y - x] = sw;
 		}
 	}
 
@@ -104,7 +104,7 @@ Rays::Rays()
 		south_east = _aOut(south_east);
 		for (int y = 63; y >= 8; y -= 8, se >>= 8)
 		{
-			rays[ToInt(EDirection::SOUTH_EAST)][y - x] = se;
+			rays[EDirection::SOUTH_EAST][y - x] = se;
 		}
 	}
 }

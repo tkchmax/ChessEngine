@@ -1,13 +1,12 @@
 #pragma once
-enum class EFigure
+enum EFigure
 {
+    NO_FIGURE,
     PAWN,
     KNIGHT,
     BISHOP,
     ROOK,
     QUEEN,
-    KING,
-    SIZE
+    KING
 };
 
-int ToInt(EFigure);
