@@ -139,3 +139,10 @@ U64 Rook::GetMoves(const U64& blockers, const U64& opposite) const
 
     return moves;
 }
+
+U64 Queen::GetMoves(const U64& blockers, const U64& opposite) const
+{
+    static const Rook r(color, square);
+    static const Bishop b(color, square);
+    return r.GetMoves(blockers, opposite) | b.GetMoves(blockers, opposite);
+}
