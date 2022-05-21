@@ -37,7 +37,6 @@ public:
     Pawn(EColor color, ESquare square, int cost = cost_default::PAWN) :
         Figure(color, EFigure::PAWN, square, cost), whitePawn(bitboards::startpos::WHITE_PAWN_START_POSITION_BITBOARD, NORTH, 8,7,9),
         blackPawn(bitboards::startpos::BLACK_PAWN_START_POSITION_BITBOARD, SOUTH, -8, -7, -9) {}
-
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 
 private:
@@ -57,6 +56,14 @@ private:
     };
     const Properties whitePawn;
     const Properties blackPawn;
+};
+
+class Knight : public Figure
+{
+public:
+    Knight(EColor color, ESquare square, int cost = cost_default::KNIGHT) :
+        Figure(color, EFigure::KNIGHT, square, cost) {}
+    virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 };
 
 class Bishop : public Figure

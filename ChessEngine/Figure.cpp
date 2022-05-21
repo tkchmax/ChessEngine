@@ -3,6 +3,51 @@
 
 #include <cassert>
 
+void Figure::move(ESquare newSquare)
+{
+    squaresCache.push(square);
+    square = newSquare;
+}
+
+void Figure::moveBack()
+{
+    assert(squaresCache.size() > 0);
+    square = squaresCache.top();
+    squaresCache.pop();
+}
+
+U64 Pawn::GetMoves(const U64& blockers, const U64& opposite) const
+{
+    U64 moves = 0;
+    bool isOnLastLine = (color == EColor::WHITE) ? square >= ESquare::A8 : square <= ESquare::H1;
+    if (isOnLastLine)
+    {
+        return 0;
+    }
+
+    const auto& rays = Rays::Get().GetRays();
+    Properties props = (color == EColor::WHITE) ? whitePawn : blackPawn;
+
+    bool isBlockerForward = (opposite | blockers) & TO_BITBOARD((int)square + props.forward);
+    if (!isBlockerForward)
+    {
+        //silent moves
+        unsigned int coef = (TO_BITBOARD((int)square) & props.startpos) ? 2 : 1;
+        assert((int)square + coef * props.forward >= 0);
+        moves |= rays[props.dir][square] & ~rays[props.dir][(int)square + coef * props.forward];
+    }
+
+    //capture moves
+    moves |= (TO_BITBOARD((int)square + props.leftHook) | TO_BITBOARD((int)square + props.rightHook)) & opposite;
+
+    return moves;
+}
+
+U64 Knight::GetMoves(const U64& blockers, const U64& opposite) const
+{
+    return Rays::Get().GetKnightMoves()[(int)square];
+}
+
 U64 Bishop::GetMoves(const U64& blockers, const U64& opposite) const
 {
     const auto& rays = Rays::Get().GetRays();
@@ -49,19 +94,6 @@ U64 Bishop::GetMoves(const U64& blockers, const U64& opposite) const
     return moves;
 }
 
-void Figure::move(ESquare newSquare)
-{
-    squaresCache.push(square);
-    square = newSquare;
-}
-
-void Figure::moveBack()
-{
-    assert(squaresCache.size() > 0);
-    square = squaresCache.top();
-    squaresCache.pop();
-}
-
 U64 Rook::GetMoves(const U64& blockers, const U64& opposite) const
 {
     const auto& rays = Rays::Get().GetRays();
@@ -104,33 +136,6 @@ U64 Rook::GetMoves(const U64& blockers, const U64& opposite) const
         int blockerId = misc::BitScanForward(rayEast & all_pieces);
         moves &= ~rays[EDirection::EAST][blockerId];
     }
-
-    return moves;
-}
-
-U64 Pawn::GetMoves(const U64& blockers, const U64& opposite) const
-{
-    U64 moves = 0;
-    bool isOnLastLine = (color == EColor::WHITE) ? square >= ESquare::A8 : square <= ESquare::H1;
-    if (isOnLastLine)
-    {
-        return 0;
-    }
-
-    const auto& rays = Rays::Get().GetRays();
-    Properties props = (color == EColor::WHITE) ? whitePawn : blackPawn;
-
-    bool isBlockerForward = (opposite | blockers) & TO_BITBOARD((int)square + props.forward);
-    if (!isBlockerForward)
-    {
-        //silent moves
-        unsigned int coef = (TO_BITBOARD((int)square) & props.startpos) ? 2 : 1;
-        assert((int)square + coef * props.forward >= 0);
-        moves |= rays[props.dir][square] & ~rays[props.dir][(int)square + coef * props.forward];
-    }
-
-    //capture moves
-    moves |= (TO_BITBOARD((int)square + props.leftHook) | TO_BITBOARD((int)square + props.rightHook)) & opposite;
 
     return moves;
 }
