@@ -15,12 +15,12 @@ public:
     Move() : move(0) {}
     Move(int from, int to, int figure, int capture, int move_type, int color);
 
-    ESquare GetFrom();
-    ESquare GetTo();
-    EFigure GetFigure();
-    EFigure GetCapture();
-    EMoveType GetMoveType();
-    EColor GetMoveColor();
+    ESquare GetFrom() const;
+    ESquare GetTo() const;
+    EFigure GetFigure() const;
+    EFigure GetCapture() const;
+    EMoveType GetMoveType() const;
+    EColor GetMoveColor() const;
     
 private: 
     U32 move;

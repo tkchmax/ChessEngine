@@ -2,15 +2,27 @@
 #ifndef FIGURE_H_
 #define FIGURE_H_
 
+#include <memory>
 #include <array>
 #include <stack>
+#include <list>
 #include "Move.h"
 //#include "EFigure.h"
 
 class Figure
 {
 public:
+    static std::list<std::unique_ptr<Figure>> Create(EFigure figureName, EColor color, std::initializer_list<ESquare> squares);
+
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const = 0;
+    U64 GetSilentMoves(const U64& blockers, const U64& opposite) const;
+    U64 GetCaptureMoves(const U64& blockers, const U64& opposite) const;
+
+    EColor GetColor() { return color; }
+    EFigure GetFigureName() { return figureName; }
+    ESquare GetSquare() { return square; }
+    int GetCost() { return cost; }
+
     void move(ESquare newSquare);
     void moveBack();
 

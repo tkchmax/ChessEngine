@@ -4,6 +4,7 @@
 #define CONSTANTS_H_
 
 #include <stdint.h>
+#include "ESquare.h"
 
 using U64 = uint64_t;
 using U32 = uint32_t;

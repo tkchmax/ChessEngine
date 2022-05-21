@@ -3,6 +3,48 @@
 
 #include <cassert>
 
+std::list<std::unique_ptr<Figure>> Figure::Create(EFigure figureName, EColor color, std::initializer_list<ESquare> init_squares)
+{
+    std::list<std::unique_ptr<Figure>> figures;
+
+    for (auto square = init_squares.begin(); square != init_squares.end(); ++square)
+    {
+        switch (figureName)
+        {
+        case EFigure::PAWN:
+            figures.push_back(std::make_unique<Pawn>(color, *square));
+            break;
+        case EFigure::KNIGHT:
+            figures.push_back(std::make_unique<Knight>(color, *square));
+            break;
+        case EFigure::BISHOP:
+            figures.push_back(std::make_unique<Bishop>(color, *square));
+            break;
+        case EFigure::ROOK:
+            figures.push_back(std::make_unique<Rook>(color, *square));
+            break;
+        case EFigure::QUEEN:
+            figures.push_back(std::make_unique<Queen>(color, *square));
+            break;
+        case EFigure::KING:
+            figures.push_back(std::make_unique<King>(color, *square));
+            break;
+        }
+    }
+
+    return figures;
+}
+
+U64 Figure::GetSilentMoves(const U64& blockers, const U64& opposite) const
+{
+    return GetMoves(blockers, opposite) & ~opposite & ~blockers;
+}
+
+U64 Figure::GetCaptureMoves(const U64& blockers, const U64& opposite) const
+{
+    return GetMoves(blockers, opposite) & opposite;
+}
+
 void Figure::move(ESquare newSquare)
 {
     squaresCache.push(square);

@@ -7,33 +7,33 @@ Move::Move(int from, int to, int figure, int capture, int move_type, int color)
         WRITE_CAPTURE(capture, move) | WRITE_MOVE_TYPE(move_type, move) | WRITE_COLOR(color, move);
 }
 
-ESquare Move::GetFrom()
+ESquare Move::GetFrom() const
 {
     return static_cast<ESquare>(READ_FROM(move));
 }
 
-ESquare Move::GetTo()
+ESquare Move::GetTo() const
 {
     return static_cast<ESquare>(READ_TO(move));
 }
 
-EFigure Move::GetFigure()
+EFigure Move::GetFigure() const
 {
     return static_cast<EFigure>(READ_FIGURE(move));
 }
 
-EFigure Move::GetCapture()
+EFigure Move::GetCapture() const
 {
     return static_cast<EFigure>(READ_CAPTURE(move));
 }
 
-EMoveType Move::GetMoveType()
+EMoveType Move::GetMoveType() const
 {
     return static_cast<EMoveType>(READ_MOVE_TYPE(move));
 
 }
 
-EColor Move::GetMoveColor()
+EColor Move::GetMoveColor() const
 {
     return static_cast<EColor>(READ_COLOR(move));
 }

@@ -2,6 +2,8 @@
 #include "Rays.h"
 #include "Misc.h"
 #include "Figure.h"
+#include "MoveList.h"
+#include "Board.h"
 
 using namespace std;
 
