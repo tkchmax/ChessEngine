@@ -19,6 +19,8 @@
 #define READ_MOVE_TYPE(num) ((num>>18)&15)
 #define READ_COLOR(num) ((num>>22)& 1)
 
+#define TO_BITBOARD(num) (U64)(1ULL << num)
+
 namespace misc
 {
     void ShowBits(const U64& bitboard);

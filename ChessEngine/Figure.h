@@ -31,6 +31,34 @@ protected:
     //std::array<int, 64> prioritySquares;
 };
 
+class Pawn : public Figure
+{
+public:
+    Pawn(EColor color, ESquare square, int cost = cost_default::PAWN) :
+        Figure(color, EFigure::PAWN, square, cost), whitePawn(bitboards::startpos::WHITE_PAWN_START_POSITION_BITBOARD, NORTH, 8,7,9),
+        blackPawn(bitboards::startpos::BLACK_PAWN_START_POSITION_BITBOARD, SOUTH, -8, -7, -9) {}
+
+    virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
+
+private:
+    struct Properties
+    {
+        Properties(U64 startpos, EDirection dir, int forward, int leftHook, int rightHook) :
+            startpos(startpos),
+            dir(dir),
+            forward(forward),
+            leftHook(leftHook),
+            rightHook(rightHook) {}
+        const U64 startpos;
+        const EDirection dir;
+        const int forward;
+        const int leftHook;
+        const int rightHook;
+    };
+    const Properties whitePawn;
+    const Properties blackPawn;
+};
+
 class Bishop : public Figure
 {
 public:

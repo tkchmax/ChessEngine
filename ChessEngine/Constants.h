@@ -37,6 +37,15 @@ namespace bitboards
         constexpr U64  WHITE_KING_START_POSITION_BITBOARD = 0x10;
         constexpr U64  BLACK_KING_START_POSITION_BITBOARD = 0x1000000000000000;
     }
+    namespace line
+    {
+
+    }
+    namespace rank
+    {
+        constexpr U64 ONE = 0xFF;
+        constexpr U64 EIGHT = 0xFF00000000000000;
+    }
 }
 
 namespace cost_default
@@ -48,5 +57,6 @@ namespace cost_default
     constexpr int QUEEN = 1000;
     constexpr int KING = INF;
 }
+
 #endif // !CONSTANTS_H_
 

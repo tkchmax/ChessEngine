@@ -7,6 +7,7 @@
 #include "EColor.h"
 #include "EFigure.h"
 #include "ESquare.h"
+#include "EDirection.h"
 
 class Move
 {
