@@ -90,5 +90,13 @@ public:
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 };
 
+class King : public Figure
+{
+public:
+    King(EColor color, ESquare square, int cost = cost_default::KING) :
+        Figure(color, EFigure::KING, square, cost) {}
+    virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
+};
+
 #endif // !FIGURE_H_
 

@@ -146,3 +146,9 @@ U64 Queen::GetMoves(const U64& blockers, const U64& opposite) const
     static const Bishop b(color, square);
     return r.GetMoves(blockers, opposite) | b.GetMoves(blockers, opposite);
 }
+
+U64 King::GetMoves(const U64& blockers, const U64& opposite) const
+{
+    return Rays::Get().GetKingMoves()[square];
+}
+

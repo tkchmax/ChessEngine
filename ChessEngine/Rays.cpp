@@ -14,9 +14,9 @@ namespace
 
     Rays::KnightMoveRays GenerateKnightMoveRays()
     {
-        Rays::KnightMoveRays knightMoves{};
-
         using namespace bitboards;
+
+        Rays::KnightMoveRays knightMoves{};
         for (int i = 0; i < 64; ++i)
         {
             std::uint64_t ray = 0;
@@ -47,6 +47,43 @@ namespace
             knightMoves[i] = ray;
         }
         return knightMoves;
+    }
+
+    Rays::KingMoveRays GenerateKingMoveRays()
+    {
+        using namespace bitboards;
+
+        Rays::KingMoveRays kingRays;
+        for (int i = 0; i < 64; ++i)
+        {
+            std::uint64_t ray = 0;
+            ray |= TO_BITBOARD(i + 8) + TO_BITBOARD(i + 1) | TO_BITBOARD(i + 7) | TO_BITBOARD(i + 9);
+
+            if (i >= (int)ESquare::B1) {
+                ray |= TO_BITBOARD(i - 1);
+            }
+            if (i >= (int)ESquare::H1) {
+                ray |= TO_BITBOARD(i - 7);
+            }
+            if (i >= (int)ESquare::A2) {
+                ray |= TO_BITBOARD(i - 8);
+            }
+            if (i >= (int)ESquare::B2)
+                ray |= TO_BITBOARD(i - 9);
+
+            if (i % 8 == 0) {
+                ray &= NOT_H_FILE;
+            }
+            if (i % 8 == 7) {
+                ray &= NOT_A_FILE;
+            }
+            if (i >= (int)ESquare::A8 && i <= (int)ESquare::H8) {
+                ray &= NOT_1_RANK;
+            }
+
+            kingRays[i] = ray;
+        }
+        return kingRays;
     }
 }
 
@@ -146,4 +183,5 @@ Rays::Rays()
     }
 
     knightMoves = GenerateKnightMoveRays();
+    kingMoves = GenerateKingMoveRays();
 }
