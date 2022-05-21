@@ -1,5 +1,7 @@
 #include "Board.h"
+#include <cassert>
 #include <iostream>
+
 Board::Board()
 {
     figures[WHITE][PAWN] = std::move(Figure::Create(PAWN, WHITE, { A2,B2,C2,D2,E2,F2,G2,H2 }));
@@ -33,7 +35,17 @@ Board::Board()
             }
         }
     }
-    std::cout << "";
+}
+
+Board::FigureIter Board::GetFigureIter(EColor color, EFigure figure, ESquare square)
+{
+    auto& list = figures[color][figure];
+    auto iter = std::find_if(list.begin(), list.end(), [&](const auto& figure) {
+        return figure->GetSquare() == square;
+    });
+
+    assert(iter != list.end());
+    return iter;
 }
 
 U64 Board::GetSideBoard(EColor color) const
@@ -71,4 +83,59 @@ bool Board::IsKingAttacked(EColor color) const
     auto kingIter = figures[color][KING].begin();
 
     return TO_BITBOARD((*kingIter)->GetSquare()) & attackRays;
+}
+
+void Board::makeMove(const Move& move)
+{
+    if (move.GetCapture() != EFigure::NO_FIGURE) {
+        RemoveCapture_(move);
+    }
+    
+    auto figureIter = GetFigureIter(move.GetMoveColor(), move.GetFigure(), move.GetFrom());
+    (*figureIter)->move(move.GetTo());
+    figureFromCoord[move.GetMoveColor()][move.GetFrom()] = EFigure::NO_FIGURE;
+    figureFromCoord[move.GetMoveColor()][move.GetTo()] = move.GetFigure();
+
+    madedMoves.push_back(move);
+}
+
+void Board::undoMove()
+{
+    assert(!madedMoves.empty());
+
+    const Move& lastMove = madedMoves.back();
+
+    if (lastMove.GetCapture() != EFigure::NO_FIGURE) {
+        RestoreCapture_();
+    }
+    
+    auto figureIter = GetFigureIter(lastMove.GetMoveColor(), lastMove.GetFigure(), lastMove.GetTo());
+    (*figureIter)->moveBack();
+    figureFromCoord[lastMove.GetMoveColor()][lastMove.GetTo()] = EFigure::NO_FIGURE;
+    figureFromCoord[lastMove.GetMoveColor()][lastMove.GetFrom()] = lastMove.GetFigure();
+
+    madedMoves.pop_back();
+}
+
+void Board::RemoveCapture_(const Move& move)
+{
+    EColor captureColor = (move.GetMoveColor() == EColor::WHITE) ? EColor::BLACK : EColor::WHITE;
+    auto captureIter = GetFigureIter(captureColor, move.GetCapture(), move.GetTo());
+
+    figureCache.push(std::move(*captureIter));
+    figures[captureColor][move.GetCapture()].erase(captureIter);
+    figureFromCoord[captureColor][move.GetTo()] = EFigure::NO_FIGURE;
+}
+
+void Board::RestoreCapture_()
+{
+    assert(!figureCache.empty());
+
+    EColor captureColor = figureCache.top()->GetColor();
+    EFigure captureFigure = figureCache.top()->GetFigureName();
+    ESquare square = figureCache.top()->GetSquare();
+
+    figures[captureColor][captureFigure].push_back(std::move(figureCache.top()));
+    figureCache.pop();
+    figureFromCoord[captureColor][square] = captureFigure;
 }

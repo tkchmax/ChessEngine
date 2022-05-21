@@ -11,13 +11,22 @@ class Board
 {
 public:
     using Figures = std::array<std::array<std::list<std::unique_ptr<Figure>>, 6>, 2>;
+    using FigureIter = std::list<std::unique_ptr<Figure>>::iterator;
     using FigureFromCoord = std::array<std::array<std::uint8_t, 64>, 2>;
 
     Board();
-
+    FigureIter GetFigureIter(EColor color, EFigure figure, ESquare square);
     U64 GetSideBoard(EColor color) const;
     U64 GetAttackRays(EColor color) const;
     bool IsKingAttacked(EColor color) const;
+    bool IsMoveLegal(const Move& move) const;
+
+    void makeMove(const Move& move);
+    void undoMove();
+
+private:
+    void RemoveCapture_(const Move& move);
+    void RestoreCapture_();
 
 private:
     Figures figures;

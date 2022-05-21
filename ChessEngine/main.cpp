@@ -9,5 +9,6 @@ using namespace std;
 
 int main()
 {
+    using namespace misc;    
 }
 
