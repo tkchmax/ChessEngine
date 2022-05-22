@@ -150,6 +150,7 @@
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="Move.cpp" />
     <ClCompile Include="MoveList.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Rays.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -164,6 +165,7 @@
     <ClInclude Include="Misc.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="MoveList.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Rays.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

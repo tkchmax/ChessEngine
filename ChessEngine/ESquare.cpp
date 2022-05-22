@@ -19,7 +19,7 @@
 
 const char* ToString(ESquare square)
 {
-    assert((int)square > 0 && (int)square < 64);
+    assert((int)square >= 0 && (int)square < 64);
     switch (square)
     {
     case ESquare::A1: return "a1";

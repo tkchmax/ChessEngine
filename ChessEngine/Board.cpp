@@ -74,6 +74,20 @@ U64 Board::GetSideBoard(EColor color) const
     return sideBoard;
 }
 
+unsigned int Board::GetFigureCount(EColor color, EFigure figureName)
+{
+    return figures[color][figureName].size();
+}
+
+unsigned int Board::GetSideFiguresCount(EColor color)
+{
+    int count = 0;
+    for (int figureInt = 0; figureInt < EFigure::COUNT; ++figureInt) {
+        count += GetFigureCount(color, static_cast<EFigure>(figureInt));
+    }
+    return count;
+}
+
 U64 Board::GetAttackRays(EColor color) const
 {
     U64 blockers = GetSideBoard(color);
@@ -104,6 +118,11 @@ bool Board::IsMoveLegal(const Move& move) const
     const_cast<Board*>(this)->undoMove();
 
     return isLegal;
+}
+
+bool Board::IsGameOver() const
+{
+    return figures[WHITE][KING].empty() || figures[BLACK][KING].empty();
 }
 
 MoveList Board::GenerateMoveList(const std::unique_ptr<Figure>& figure) const

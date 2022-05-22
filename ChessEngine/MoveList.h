@@ -13,7 +13,7 @@ public:
     void add(const Move& move, bool isPriorityMove=false);
     void operator+=(const MoveList& other);
 
-    const std::list<Move>& GetList() { return moves; }
+    const std::list<Move>& Get() { return moves; }
 
    private:
     std::list<Move> moves;

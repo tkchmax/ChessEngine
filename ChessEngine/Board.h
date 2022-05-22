@@ -18,9 +18,12 @@ public:
     Board();
     FigureIter GetFigureIter(EColor color, EFigure figure, ESquare square);
     U64 GetSideBoard(EColor color) const;
+    unsigned int GetFigureCount(EColor color, EFigure figureName);
+    unsigned int GetSideFiguresCount(EColor color);
     U64 GetAttackRays(EColor color) const;
     bool IsKingAttacked(EColor color) const;
     bool IsMoveLegal(const Move& move) const;
+    bool IsGameOver() const;
 
     MoveList GenerateMoveList(const std::unique_ptr<Figure>& figure) const;
     MoveList GenerateMoveList(EColor color, bool isCaptureOnly = false) const;
