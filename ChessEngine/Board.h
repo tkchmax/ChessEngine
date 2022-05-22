@@ -6,6 +6,7 @@
 #include <list>
 #include <stack>
 #include "Figure.h"
+#include "MoveList.h"
 
 class Board
 {
@@ -20,6 +21,10 @@ public:
     U64 GetAttackRays(EColor color) const;
     bool IsKingAttacked(EColor color) const;
     bool IsMoveLegal(const Move& move) const;
+
+    MoveList GenerateMoveList(const std::unique_ptr<Figure>& figure) const;
+    MoveList GenerateMoveList(EColor color, bool isCaptureOnly = false) const;
+    MoveList GenerateCaptureMoveList(const std::unique_ptr<Figure>& figure) const;
 
     void makeMove(const Move& move);
     void undoMove();

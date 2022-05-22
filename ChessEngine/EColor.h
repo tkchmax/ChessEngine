@@ -5,3 +5,4 @@ enum EColor
     BLACK
 };
 
+const char* ToString(EColor color);

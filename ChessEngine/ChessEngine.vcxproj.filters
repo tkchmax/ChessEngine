@@ -47,6 +47,15 @@
     <ClCompile Include="MoveList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ESquare.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="EFigure.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
+    <ClCompile Include="EColor.cpp">
+      <Filter>Source Files\Types</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Constants.h">

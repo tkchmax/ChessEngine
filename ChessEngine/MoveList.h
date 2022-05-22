@@ -8,7 +8,10 @@
 class MoveList
 {
 public:
+    friend std::ostream& operator<<(std::ostream& out, const MoveList& moveList);
+
     void add(const Move& move, bool isPriorityMove=false);
+    void operator+=(const MoveList& other);
 
     const std::list<Move>& GetList() { return moves; }
 

@@ -11,3 +11,5 @@ enum EFigure
     COUNT = 6
 };
 
+const char* ToString(EFigure figureName);
+
