@@ -5,12 +5,19 @@
 #include "Board.h"
 #include <vector>
 
+enum class EPlayer
+{
+    BOT,
+    CONSOLE,
+};
+
 class Player
 {
 public:
     Player(std::shared_ptr<Board>board, EColor color) : board(board), color(color) {}
     virtual Move ChooseMove() = 0;
     void makeMove() { board->makeMove(ChooseMove()); }
+    static std::unique_ptr<Player> Create(EPlayer type, std::shared_ptr<Board> board, EColor color);
 protected:
     std::shared_ptr<Board> board;
     EColor color;

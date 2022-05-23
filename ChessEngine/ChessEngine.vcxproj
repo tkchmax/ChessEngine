@@ -146,6 +146,7 @@
     <ClCompile Include="EMoveType.cpp" />
     <ClCompile Include="ESquare.cpp" />
     <ClCompile Include="Figure.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Misc.cpp" />
     <ClCompile Include="Move.cpp" />
@@ -163,6 +164,7 @@
     <ClInclude Include="EMoveType.h" />
     <ClInclude Include="ESquare.h" />
     <ClInclude Include="Figure.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="Misc.h" />
     <ClInclude Include="Move.h" />
     <ClInclude Include="MoveList.h" />

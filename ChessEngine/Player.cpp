@@ -156,3 +156,11 @@ int Bot::GetStrategyEval(EFigure figure) const
     return eval;
 
 }
+
+std::unique_ptr<Player> Player::Create(EPlayer type, std::shared_ptr<Board> board, EColor color)
+{
+    switch (type)
+    {
+        case EPlayer::BOT: return std::make_unique<Bot>(board, color);
+    }
+}
