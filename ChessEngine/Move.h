@@ -14,6 +14,12 @@ class Move
 public:
     Move() : move(0) {}
     Move(int from, int to, int figure, int capture, int move_type, int color);
+    Move(int move) : move(move) {}
+
+    static Move GetWhiteShortCastlingMove() { return Move(moves::WHITE_SHORTCASTLING); }
+    static Move GetBlackShortCastlingMove() { return Move(moves::BLACK_SHORTCASTLING); }
+    static Move GetWhiteLongCastlingMove() { return Move(moves::WHITE_LONGCASTLING); }
+    static Move GetBlackLongCastlingMove() { return Move(moves::BLACK_LONGCASTLING); }
 
     U32 Get() const;
     ESquare GetFrom() const;
@@ -24,9 +30,10 @@ public:
     EColor GetMoveColor() const;
 
     void show() const;
-    
-private: 
+
+private:
     U32 move;
 };
+
 
 #endif //!MOVE_H_

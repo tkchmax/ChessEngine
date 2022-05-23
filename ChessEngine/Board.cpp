@@ -47,7 +47,16 @@ Board::FigureIter Board::GetFigureIter(EColor color, EFigure figure, ESquare squ
         return figure->GetSquare() == square;
         });
 
-    assert(iter != list.end());
+    return iter;
+}
+
+Board::FigureIterConst Board::GetFigureIter(EColor color, EFigure figure, ESquare square) const
+{
+    const auto& list = figures[color][figure];
+    auto iter = std::find_if(list.begin(), list.end(), [&](const auto& figure) {
+        return figure->GetSquare() == square;
+    });
+
     return iter;
 }
 
@@ -117,6 +126,32 @@ bool Board::IsKingAttacked(EColor color) const
     return TO_BITBOARD((*kingIter)->GetSquare()) & attackRays;
 }
 
+bool Board::IsShortCastlingPossible(EColor color) const
+{
+    U64 castlingBlockers = (color == WHITE) ?
+        bitboards::castling_blockers::SHORT_CASTLING_WHITE :
+        bitboards::castling_blockers::SHORT_CASTLING_BLACK;
+
+    ESquare rookSquare = (color == WHITE) ? 
+        positions_square::WHITE_RSH_ROOK :
+        positions_square::BLACK_RSH_ROOK;
+
+    return IsCastlingPossible_(color, castlingBlockers, rookSquare);
+}
+
+bool Board::IsLongCastlingPossible(EColor color) const
+{
+    U64 castlingBlockers = (color == WHITE) ?
+        bitboards::castling_blockers::LONG_CASTLING_WHITE :
+        bitboards::castling_blockers::LONG_CASTLING_BLACK;
+
+    ESquare rookSquare = (color == WHITE) ?
+        positions_square::WHITE_LSH_ROOK :
+        positions_square::BLACK_LSH_ROOK;
+
+    return IsCastlingPossible_(color, castlingBlockers, rookSquare);
+}
+
 bool Board::IsMoveLegal(const Move& move) const
 {
     const_cast<Board*>(this)->makeMove(move);
@@ -177,13 +212,22 @@ MoveList Board::GenerateMoveList(EColor color, bool isCaptureOnly) const
         for (auto figureIter = list.begin(); figureIter != list.end(); ++figureIter) {
             if (isCaptureOnly) {
                 moveList += GenerateCaptureMoveList(*figureIter);
-
             }
             else {
                 moveList += GenerateMoveList(*figureIter);
             }
         }
     }
+
+    if (!isCaptureOnly) {
+        if (IsShortCastlingPossible(color)) {
+            moveList.add((color == WHITE) ? Move::GetWhiteShortCastlingMove() : Move::GetBlackShortCastlingMove());
+        }
+        if (IsLongCastlingPossible(color)) {
+            moveList.add((color == WHITE) ? Move::GetWhiteLongCastlingMove() : Move::GetBlackLongCastlingMove());
+        }
+    }
+
     return moveList;
 }
 
@@ -217,10 +261,24 @@ void Board::makeMove(const Move& move)
         RemoveCapture_(move);
     }
 
-    auto figureIter = GetFigureIter(move.GetMoveColor(), move.GetFigure(), move.GetFrom());
-    (*figureIter)->move(move.GetTo());
-    figureFromCoord[move.GetMoveColor()][move.GetFrom()] = EFigure::NO_FIGURE;
-    figureFromCoord[move.GetMoveColor()][move.GetTo()] = move.GetFigure();
+    //auto figureIter = GetFigureIter(move.GetMoveColor(), move.GetFigure(), move.GetFrom());
+    //if (figureIter == figures[move.GetMoveColor()][move.GetFigure()].end())
+    //{
+    //    std::cout << "1!!!!!!-----------";
+    //}
+    //(*figureIter)->move(move.GetTo());
+    //figureFromCoord[move.GetMoveColor()][move.GetFrom()] = EFigure::NO_FIGURE;
+    //figureFromCoord[move.GetMoveColor()][move.GetTo()] = move.GetFigure();
+    MoveFigure_(move.GetFigure(), move.GetMoveColor(), move.GetFrom(), move.GetTo());
+
+    switch (move.GetMoveType()) {
+    case EMoveType::SHORT_CASTLING:
+        MakeShortCastling_(move.GetMoveColor());
+        break;
+    case EMoveType::LONG_CASTLING:
+        MakeLongCastling_(move.GetMoveColor());
+        break;
+    }
 
     madedMoves.push_back(move);
 }
@@ -235,10 +293,20 @@ void Board::undoMove()
         RestoreCapture_();
     }
 
-    auto figureIter = GetFigureIter(lastMove.GetMoveColor(), lastMove.GetFigure(), lastMove.GetTo());
-    (*figureIter)->moveBack();
-    figureFromCoord[lastMove.GetMoveColor()][lastMove.GetTo()] = EFigure::NO_FIGURE;
-    figureFromCoord[lastMove.GetMoveColor()][lastMove.GetFrom()] = lastMove.GetFigure();
+    //auto figureIter = GetFigureIter(lastMove.GetMoveColor(), lastMove.GetFigure(), lastMove.GetTo());
+    //(*figureIter)->moveBack();
+    //figureFromCoord[lastMove.GetMoveColor()][lastMove.GetTo()] = EFigure::NO_FIGURE;
+    //figureFromCoord[lastMove.GetMoveColor()][lastMove.GetFrom()] = lastMove.GetFigure();
+    MoveBackFigure_(lastMove.GetFigure(), lastMove.GetMoveColor(), lastMove.GetFrom(), lastMove.GetTo());
+
+    switch (lastMove.GetMoveType()) {
+    case EMoveType::SHORT_CASTLING:
+        UndoShortCastling_(lastMove.GetMoveColor());
+        break;
+    case EMoveType::LONG_CASTLING:
+        UndoLongCastling_(lastMove.GetMoveColor());
+        break;
+    }
 
     madedMoves.pop_back();
 }
@@ -264,4 +332,71 @@ void Board::RestoreCapture_()
     figures[captureColor][captureFigure].push_back(std::move(figureCache.top()));
     figureCache.pop();
     figureFromCoord[captureColor][square] = captureFigure;
+}
+
+bool Board::IsCastlingPossible_(EColor color, const U64& castlingBlockers, ESquare rookSquare) const
+{
+    if (IsKingAttacked(color)) {
+        return false;
+    }
+
+    auto rookIter = GetFigureIter(color, ROOK, rookSquare);
+    if (rookIter == figures[color][ROOK].end()) {
+        return false;
+    }
+
+    auto kingIter = figures[color][KING].begin();
+    if ((*rookIter)->GetMovesCount() > 0 || (*kingIter)->GetMovesCount() > 0) {
+        return false;
+    }
+
+    EColor oppositeColor = (color == WHITE) ? BLACK : WHITE;
+    U64 isBlockersBetweenKingAndRook = GetSideBoard(color) & castlingBlockers;
+    U64 isCastlingUnderAttack = GetAttackRays(oppositeColor) & castlingBlockers;
+    
+    return !(isBlockersBetweenKingAndRook || isCastlingUnderAttack);
+}
+
+void Board::MakeShortCastling_(EColor color)
+{
+    ESquare from = (color == WHITE) ? positions_square::WHITE_RSH_ROOK : positions_square::BLACK_RSH_ROOK;
+    ESquare to = (color == WHITE) ? positions_square::WHITE_RSH_ROOK_CASTLED : positions_square::BLACK_RSH_ROOK_CASTLED;
+    MoveFigure_(ROOK, color, from, to);
+}
+
+void Board::MakeLongCastling_(EColor color)
+{
+    ESquare from = (color == WHITE) ? positions_square::WHITE_LSH_ROOK : positions_square::BLACK_LSH_ROOK;
+    ESquare to = (color == WHITE) ? positions_square::WHITE_LSH_ROOK_CASTLED : positions_square::BLACK_LSH_ROOK_CASTLED;
+    MoveFigure_(ROOK, color, from, to);
+}
+
+void Board::UndoShortCastling_(EColor color)
+{
+    ESquare from = (color == WHITE) ? positions_square::WHITE_RSH_ROOK : positions_square::BLACK_RSH_ROOK;
+    ESquare to = (color == WHITE) ? positions_square::WHITE_RSH_ROOK_CASTLED : positions_square::BLACK_RSH_ROOK_CASTLED;
+    MoveBackFigure_(ROOK, color, from, to);
+}
+
+void Board::UndoLongCastling_(EColor color)
+{
+    ESquare from = (color == WHITE) ? positions_square::WHITE_LSH_ROOK : positions_square::BLACK_LSH_ROOK;
+    ESquare to = (color == WHITE) ? positions_square::WHITE_LSH_ROOK_CASTLED : positions_square::BLACK_LSH_ROOK_CASTLED;
+    MoveBackFigure_(ROOK, color, from, to);
+}
+
+void Board::MoveFigure_(EFigure figureName, EColor color, ESquare from, ESquare to)
+{
+    auto figureIter = GetFigureIter(color, figureName, from);
+    (*figureIter)->move(to);
+    figureFromCoord[color][from] = EFigure::NO_FIGURE;
+    figureFromCoord[color][to] = figureName;
+}
+
+void Board::MoveBackFigure_(EFigure figureName, EColor color, ESquare from, ESquare to)
+{
+    auto figureIter = GetFigureIter(color, figureName, to);
+    (*figureIter)->moveBack();
+    figureFromCoord[color][to] = EFigure::NO_FIGURE;
+    figureFromCoord[color][from] = figureName;
 }

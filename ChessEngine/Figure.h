@@ -21,6 +21,7 @@ public:
     EColor GetColor() { return color; }
     EFigure GetFigureName() { return figureName; }
     ESquare GetSquare() { return square; }
+    int GetMovesCount() { return squaresCache.size(); }
     int GetCost() { return cost; }
 
     void move(ESquare newSquare);

@@ -48,6 +48,35 @@ namespace bitboards
         constexpr U64 ONE = 0xFF;
         constexpr U64 EIGHT = 0xFF00000000000000;
     }
+
+	namespace castling_blockers
+	{
+		constexpr U64 SHORT_CASTLING_WHITE = 0x60;
+		constexpr U64 SHORT_CASTLING_BLACK = 0x6000000000000000;
+		constexpr U64 LONG_CASTLING_WHITE = 0xE;
+		constexpr U64 LONG_CASTLING_BLACK = 0xE00000000000000;
+	}
+}
+
+namespace positions_square
+{
+	static const auto WHITE_LSH_ROOK = A1;
+	static const auto WHITE_RSH_ROOK = H1;
+	static const auto BLACK_LSH_ROOK = A8;
+	static const auto BLACK_RSH_ROOK = H8;
+
+	static const auto WHITE_RSH_ROOK_CASTLED = F1;
+	static const auto WHITE_LSH_ROOK_CASTLED = D1;
+	static const auto BLACK_RSH_ROOK_CASTLED = F8;
+	static const auto BLACK_LSH_ROOK_CASTLED = D8;
+}
+
+namespace moves
+{
+	constexpr U32 WHITE_SHORTCASTLING = 0xB5184;
+	constexpr U32 BLACK_SHORTCASTLING = 0x4B5FBC;
+	constexpr U32 WHITE_LONGCASTLING = 0xF5084;
+	constexpr U32 BLACK_LONGCASTLING = 0x4F5EBC;
 }
 
 namespace cost_default

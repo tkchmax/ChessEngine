@@ -55,7 +55,7 @@ int Bot::AlphaBeta(int depth, int alpha, int beta, EColor color)
     }
 
     MoveList moves = board->GenerateMoveList(color);
-    //mvv_lva
+    moves.mvv_lva();
 
     auto moveIter = moves.Get().begin();
     Move bestMove = *moveIter;
@@ -87,7 +87,7 @@ int Bot::Quies(EColor color, int alpha, int beta)
     }
 
     MoveList forcedMoves = board->GenerateMoveList(color, true);
-    //mvv-lva
+    forcedMoves.mvv_lva();
 
     auto moveIter = forcedMoves.Get().begin();
     while (moveIter != forcedMoves.Get().end() && alpha < beta) {

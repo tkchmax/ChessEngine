@@ -10,6 +10,7 @@ Game::Game(EPlayer whitePlayerType, EPlayer blackPlayerType)
 void Game::play(int moveLimit)
 {
     Move move;
+    this;
     for(int nMove = 0; nMove < moveLimit && !board->IsGameOver(); ++nMove)
     {
         move = whitePlayer->ChooseMove();
