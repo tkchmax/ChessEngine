@@ -2,7 +2,7 @@
 enum EColor
 {
     WHITE,
-    BLACK
+    BLACK,
 };
 
 const char* ToString(EColor color);

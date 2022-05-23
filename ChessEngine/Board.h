@@ -7,6 +7,7 @@
 #include <stack>
 #include "Figure.h"
 #include "MoveList.h"
+#include "EGamePhase.h"
 
 class Board
 {
@@ -16,10 +17,13 @@ public:
     using FigureFromCoord = std::array<std::array<std::uint8_t, 64>, 2>;
 
     Board();
+    const Figures& GetFigures() { return figures; }
     FigureIter GetFigureIter(EColor color, EFigure figure, ESquare square);
     U64 GetSideBoard(EColor color) const;
     unsigned int GetFigureCount(EColor color, EFigure figureName);
     unsigned int GetSideFiguresCount(EColor color);
+    unsigned int GetFigureSumMobility(EColor color, EFigure figureName);
+    EGamePhase GetGamePhase() { return gamePhase; }
     U64 GetAttackRays(EColor color) const;
     bool IsKingAttacked(EColor color) const;
     bool IsMoveLegal(const Move& move) const;
@@ -41,7 +45,7 @@ private:
     FigureFromCoord figureFromCoord;
     std::stack<std::unique_ptr<Figure>> figureCache;
     std::list<Move> madedMoves;
-
+    EGamePhase gamePhase;
 };
 
 #endif

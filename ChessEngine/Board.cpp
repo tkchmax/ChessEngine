@@ -1,18 +1,7 @@
 #include "Board.h"
 #include <cassert>
 #include <iostream>
-
-namespace
-{
-    MoveList GenerateMoveList(const std::unique_ptr<Figure>& figure, U64 blockers, U64 opposite)
-    {
-        U64 movesBoard = figure->GetMoves(blockers, opposite);
-        U64 movesBoardCaptures = movesBoard & opposite;
-        while (movesBoardCaptures) {
-            int to = misc::BitScanForward(movesBoardCaptures);
-        }
-    }
-}
+#include <bitset>
 
 Board::Board()
 {
@@ -47,6 +36,8 @@ Board::Board()
             }
         }
     }
+
+    gamePhase = EGamePhase::OPENNING;
 }
 
 Board::FigureIter Board::GetFigureIter(EColor color, EFigure figure, ESquare square)
@@ -86,6 +77,21 @@ unsigned int Board::GetSideFiguresCount(EColor color)
         count += GetFigureCount(color, static_cast<EFigure>(figureInt));
     }
     return count;
+}
+
+unsigned int Board::GetFigureSumMobility(EColor color, EFigure figureName)
+{
+    EColor oppositeColor = (color == WHITE) ? BLACK : WHITE;
+    std::uint64_t blockers = GetSideBoard(color);
+    std::uint64_t opposite = GetSideBoard(oppositeColor);
+
+    int mobility = 0;
+    for (auto it = figures[color][figureName].begin(); it != figures[color][figureName].end(); ++it)
+    {
+        std::uint64_t silentMoves = (*it)->GetSilentMoves(blockers, opposite);
+        mobility += std::bitset<64>(silentMoves).count();
+    }
+    return mobility;
 }
 
 U64 Board::GetAttackRays(EColor color) const

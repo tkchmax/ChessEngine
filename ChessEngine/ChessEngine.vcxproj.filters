@@ -106,5 +106,8 @@
     <ClInclude Include="Player.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="EGamePhase.h">
+      <Filter>Header Files\Types</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

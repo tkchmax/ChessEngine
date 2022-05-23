@@ -159,6 +159,7 @@
     <ClInclude Include="EColor.h" />
     <ClInclude Include="EDirection.h" />
     <ClInclude Include="EFigure.h" />
+    <ClInclude Include="EGamePhase.h" />
     <ClInclude Include="EMoveType.h" />
     <ClInclude Include="ESquare.h" />
     <ClInclude Include="Figure.h" />
