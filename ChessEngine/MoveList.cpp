@@ -24,6 +24,24 @@ void MoveList::operator+=(const MoveList& other)
     }
 }
 
+void MoveList::mvv_lva()
+{
+    auto captures_begin = std::next(moves.end(), -nSilent - nCapture);
+    auto captures_end = std::next(moves.end(), -nSilent);
+
+    std::list<Move> sorted_captures;
+    sorted_captures.splice(sorted_captures.begin(), moves, captures_begin, captures_end);
+
+    sorted_captures.sort([](const Move& first, const Move& second)
+        {
+            int first_score = first.GetCapture() - first.GetFigure();
+            int second_score = second.GetCapture() - second.GetFigure();
+            return first_score > second_score;
+        });
+
+    moves.splice(captures_end, sorted_captures);
+}
+
 std::ostream& operator<<(std::ostream& out, const MoveList& moveList)
 {
     out << "priority_count:" << moveList.nPriority << std::endl;

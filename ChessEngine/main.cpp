@@ -5,9 +5,6 @@ using namespace std;
 
 int main()
 {
-    using namespace misc;    
-
-    Game game(EPlayer::BOT, EPlayer::BOT);
-    game.play(1);
+    using namespace misc;
 }
 

@@ -14,7 +14,8 @@ public:
     void operator+=(const MoveList& other);
 
     const std::list<Move>& Get() { return moves; }
-
+    
+    void mvv_lva();
    private:
     std::list<Move> moves;
     int nPriority, nCapture, nSilent;
