@@ -24,7 +24,7 @@ Move::Move(int from, int to, int figure, int capture, int move_type, int color)
         WRITE_CAPTURE(capture, move) | WRITE_MOVE_TYPE(move_type, move) | WRITE_COLOR(color, move);
 }
 
-std::string Move::GetNotation(bool isExpandedNotationNeeded)
+std::string Move::GetNotation(bool isExpandedNotationNeeded) const
 {
     std::string figure_symbol = "";
     std::string figure_capture_symbol = "";
@@ -33,7 +33,7 @@ std::string Move::GetNotation(bool isExpandedNotationNeeded)
     std::stringstream notation;
     
     if (GetFigure() == EFigure::PAWN && GetMoveType() == EMoveType::CAPTURE) {
-        return std::string(1, ToString(GetFrom())[0]) + capture_symbol + ToString(GetTo());
+        return std::string(1, ToString(GetFrom())[0]) + "x" + ToString(GetTo());
     }
 
     switch (GetMoveType())

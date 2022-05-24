@@ -55,7 +55,7 @@ Board::FigureIterConst Board::GetFigureIter(EColor color, EFigure figure, ESquar
     const auto& list = figures[color][figure];
     auto iter = std::find_if(list.begin(), list.end(), [&](const auto& figure) {
         return figure->GetSquare() == square;
-    });
+        });
 
     return iter;
 }
@@ -223,7 +223,7 @@ std::string Board::GetPGN()
         if (i % 2 == 0) {
             PGN += std::to_string(i) + ". ";
         }
-        PGN += (*moveIter).GetNotation(tmpBoard->IsExpandedNotationNeeded_(*moveIter)) + " ";
+        PGN += (*moveIter).GetNotation(tmpBoard->IsExpandedNotationNeeded(*moveIter)) + " ";
         tmpBoard->makeMove(*moveIter);
     }
     return PGN;
@@ -246,7 +246,7 @@ bool Board::IsShortCastlingPossible(EColor color) const
         bitboards::castling_blockers::SHORT_CASTLING_WHITE :
         bitboards::castling_blockers::SHORT_CASTLING_BLACK;
 
-    ESquare rookSquare = (color == WHITE) ? 
+    ESquare rookSquare = (color == WHITE) ?
         positions_square::WHITE_RSH_ROOK :
         positions_square::BLACK_RSH_ROOK;
 
@@ -356,7 +356,6 @@ MoveList Board::GenerateCaptureMoveList(const std::unique_ptr<Figure>& figure) c
     U64 fromSquare = figure->GetSquare();
 
     U64 movesBoardCaptures = figure->GetCaptureMoves(GetSideBoard(color), GetSideBoard(oppositeColor));
-
     while (movesBoardCaptures) {
         int toSquare = misc::BitScanForward(movesBoardCaptures);
         int captureInt = figureFromCoord[oppositeColor][toSquare];
@@ -456,11 +455,11 @@ bool Board::IsCastlingPossible_(EColor color, const U64& castlingBlockers, ESqua
     EColor oppositeColor = (color == WHITE) ? BLACK : WHITE;
     U64 isBlockersBetweenKingAndRook = GetSideBoard(color) & castlingBlockers;
     U64 isCastlingUnderAttack = GetAttackRays(oppositeColor) & castlingBlockers;
-    
+
     return !(isBlockersBetweenKingAndRook || isCastlingUnderAttack);
 }
 
-bool Board::IsExpandedNotationNeeded_(const Move& move)
+bool Board::IsExpandedNotationNeeded(const Move& move)
 {
     MoveList moveList = GenerateMoveList(move.GetMoveColor());
 

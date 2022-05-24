@@ -67,20 +67,24 @@ U64 Pawn::GetMoves(const U64& blockers, const U64& opposite) const
         return 0;
     }
 
-    const auto& rays = Rays::Get().GetRays();
     Properties props = (color == EColor::WHITE) ? whitePawn : blackPawn;
 
     bool isBlockerForward = (opposite | blockers) & TO_BITBOARD((int)square + props.forward);
     if (!isBlockerForward)
     {
         //silent moves
-        unsigned int coef = (TO_BITBOARD((int)square) & props.startpos) ? 2 : 1;
-        assert((int)square + coef * props.forward >= 0);
-        moves |= rays[props.dir][square] & ~rays[props.dir][(int)square + coef * props.forward];
+        assert((int)square + props.forward >= 0);
+        moves |= TO_BITBOARD((int)square + props.forward);
+
+        bool isTwoSquareMovePossible = !((opposite | blockers) & TO_BITBOARD((int)square + 2 * props.forward)) &&
+            (TO_BITBOARD(int(square)) & props.startpos);
+        if (isTwoSquareMovePossible) {
+            moves |= TO_BITBOARD((int)square + 2 * props.forward);
+        }
     }
 
     //capture moves
-    moves |= (TO_BITBOARD((int)square + props.leftHook) | TO_BITBOARD((int)square + props.rightHook)) & opposite;
+    moves |= ((TO_BITBOARD((int)square + props.leftHook) & props.not_rsh_file) | (TO_BITBOARD((int)square + props.rightHook)) & props.not_lsh_file) & opposite;
 
     return moves;
 }

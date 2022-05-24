@@ -24,6 +24,12 @@
     <Filter Include="Source Files\Core">
       <UniqueIdentifier>{f7c4ec77-c254-41ec-86c0-45024b0d9ed4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\UI">
+      <UniqueIdentifier>{def8b51d-6821-4f42-a0e1-eae0588334db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\UI">
+      <UniqueIdentifier>{d80f05ed-73e7-4a0e-9412-8ed6bcfcee39}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -67,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="Game.cpp">
       <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="CLI.cpp">
+      <Filter>Source Files\UI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +123,9 @@
     </ClInclude>
     <ClInclude Include="Game.h">
       <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="CLI.h">
+      <Filter>Header Files\UI</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

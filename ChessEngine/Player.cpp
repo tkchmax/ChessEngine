@@ -1,27 +1,29 @@
 #include "Player.h"
 #include <bitset>
+#include <iostream>
+#include <algorithm>
 
 namespace
 {
-    std::array<int,64> GetPriority(EFigure figure, EColor color, EGamePhase gamePhase)
+    std::array<int, 64> GetPriority(EFigure figure, EColor color, EGamePhase gamePhase)
     {
         switch (figure)
         {
-            case EFigure::KNIGHT: return figure_priority_squares::KNIGHT;
-            case EFigure::BISHOP: return figure_priority_squares::BISHOP;
-            case EFigure::ROOK: return figure_priority_squares::ROOK;
-            case EFigure::QUEEN: return figure_priority_squares::QUEEN;
+        case EFigure::KNIGHT: return figure_priority_squares::KNIGHT;
+        case EFigure::BISHOP: return figure_priority_squares::BISHOP;
+        case EFigure::ROOK: return figure_priority_squares::ROOK;
+        case EFigure::QUEEN: return figure_priority_squares::QUEEN;
 
-            case EFigure::PAWN: return (color == WHITE) ? figure_priority_squares::WHITE_PAWN : figure_priority_squares::BLACK_PAWN;
-            case EFigure::KING:
-            {
-                if (gamePhase == EGamePhase::END_GAME) {
-                    return figure_priority_squares::KING_ENDGAME;
-                }
-                else {
-                    return (color == WHITE) ? figure_priority_squares::WHITE_KING_MIDDLEGAME : figure_priority_squares::BLACK_KING_MIDDLEGAME;
-                }
+        case EFigure::PAWN: return (color == WHITE) ? figure_priority_squares::WHITE_PAWN : figure_priority_squares::BLACK_PAWN;
+        case EFigure::KING:
+        {
+            if (gamePhase == EGamePhase::END_GAME) {
+                return figure_priority_squares::KING_ENDGAME;
             }
+            else {
+                return (color == WHITE) ? figure_priority_squares::WHITE_KING_MIDDLEGAME : figure_priority_squares::BLACK_KING_MIDDLEGAME;
+            }
+        }
         }
     }
 
@@ -38,14 +40,15 @@ namespace
         }
         return priorities;
     }
-
 }
 
 Move Bot::ChooseMove()
 {
     bestMoves = std::vector<Move>(depth);
     int score = AlphaBeta(depth, -INF, INF, color);
-    return bestMoves[depth - 1];
+    Move move = bestMoves[depth - 1];
+    std::cout << move.GetNotation(board->IsExpandedNotationNeeded(move)) << std::endl;
+    return move;
 }
 
 int Bot::AlphaBeta(int depth, int alpha, int beta, EColor color)
@@ -150,7 +153,7 @@ int Bot::GetStrategyEval(EFigure figure) const
         U64 silentMoves = (*figureIter)->GetSilentMoves(whiteBoard, blackBoard);
         eval += mobilityCoef * std::bitset<64>(silentMoves).count(); // mobility eval
     }
-    
+
     const auto& blackList = figures[BLACK][figure];
     for (auto figureIter = blackList.begin(); figureIter != blackList.end(); ++figureIter) {
         eval -= priorities[BLACK][figure][gamePhase][(*figureIter)->GetSquare()];
@@ -166,6 +169,55 @@ std::unique_ptr<Player> Player::Create(EPlayer type, std::shared_ptr<Board> boar
 {
     switch (type)
     {
-        case EPlayer::BOT: return std::make_unique<Bot>(board, color, 6);
+    case EPlayer::BOT: return std::make_unique<Bot>(board, color, 6);
+    case EPlayer::CONSOLE: return std::make_unique<ConsolePlayer>(board, color);
     }
+}
+
+Move ConsolePlayer::ChooseMove()
+{
+    MoveList availibleMoves = board->GenerateMoveList(color);
+    std::string raw_move;
+
+
+    while (true)
+    {
+        std::cout << "your move >> ";
+        std::cin >> raw_move;
+            
+        for (auto moveIter = availibleMoves.Get().begin(); moveIter != availibleMoves.Get().end(); ++moveIter) {
+            if ((*moveIter).GetNotation(board->IsExpandedNotationNeeded(*moveIter)) == raw_move) {
+                return *moveIter;
+            }
+        }
+        std::string err_msg = "ERROR: There is no move " + raw_move + " in current posmoveIterion";
+        printf("\033[31m%s\033[0m\n", err_msg.c_str());
+        printf("\033[32mAvailible moves:\n%s\033[0m\n", GetAvailibleMoves().c_str());
+        
+    }
+
+    return Move();
+}
+
+std::string ConsolePlayer::GetAvailibleMoves()
+{
+    MoveList moveList = board->GenerateMoveList(color);
+    std::string availible_moves = "";
+
+    for (int figureInt = 0; figureInt <= EFigure::COUNT; ++figureInt)
+    {
+        std::list<Move> figure_list;
+        std::copy_if(moveList.Get().begin(), moveList.Get().end(), std::back_inserter(figure_list),
+            [figureInt](const Move& move) {
+                return move.GetFigure() == figureInt;
+            });
+
+        if (!figure_list.empty())
+        {
+            for (auto move : figure_list)
+                availible_moves += move.GetNotation(board->IsExpandedNotationNeeded(move)) + " ";
+            availible_moves += "\n";
+        }
+    }
+    return availible_moves;
 }

@@ -43,5 +43,15 @@ private:
     std::vector<Move> bestMoves;    
 };
 
+class ConsolePlayer : public Player
+{
+public:
+    ConsolePlayer(std::shared_ptr<Board> board, EColor color) : Player(board,color) {}
+    virtual Move ChooseMove() override;
+private:
+    std::string GetAvailibleMoves();
+
+};
+
 #endif //!PLAYER_H_
 

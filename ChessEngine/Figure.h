@@ -47,20 +47,24 @@ class Pawn : public Figure
 {
 public:
     Pawn(EColor color, ESquare square, int cost = cost_default::PAWN) :
-        Figure(color, EFigure::PAWN, square, cost), whitePawn(bitboards::startpos::WHITE_PAWN_START_POSITION_BITBOARD, NORTH, 8,7,9),
-        blackPawn(bitboards::startpos::BLACK_PAWN_START_POSITION_BITBOARD, SOUTH, -8, -7, -9) {}
+        Figure(color, EFigure::PAWN, square, cost), whitePawn(bitboards::startpos::WHITE_PAWN_START_POSITION_BITBOARD, bitboards::NOT_A_FILE, bitboards::NOT_H_FILE, NORTH, 8,7,9),
+        blackPawn(bitboards::startpos::BLACK_PAWN_START_POSITION_BITBOARD, bitboards::NOT_H_FILE, bitboards::NOT_A_FILE, SOUTH, -8, -7, -9) {}
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 
 private:
     struct Properties
     {
-        Properties(U64 startpos, EDirection dir, int forward, int leftHook, int rightHook) :
+        Properties(U64 startpos, U64 not_lsh_file, U64 not_rsh_file, EDirection dir, int forward, int leftHook, int rightHook) :
             startpos(startpos),
+            not_lsh_file(not_lsh_file),
+            not_rsh_file(not_rsh_file),
             dir(dir),
             forward(forward),
             leftHook(leftHook),
             rightHook(rightHook) {}
         const U64 startpos;
+        const U64 not_lsh_file;
+        const U64 not_rsh_file;
         const EDirection dir;
         const int forward;
         const int leftHook;

@@ -19,7 +19,7 @@ public:
     Move(int from, int to, int figure, int capture, int move_type, int color);
     Move(int move) : move(move) {}
 
-    std::string GetNotation(bool isExpandedNotationNeeded=false);
+    std::string GetNotation(bool isExpandedNotationNeeded=false) const;
 
     static Move GetWhiteShortCastlingMove() { return Move(moves::WHITE_SHORTCASTLING); }
     static Move GetBlackShortCastlingMove() { return Move(moves::BLACK_SHORTCASTLING); }

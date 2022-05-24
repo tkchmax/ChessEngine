@@ -45,11 +45,12 @@ public:
     void makeMove(const Move& move);
     void undoMove();
 
+    bool IsExpandedNotationNeeded(const Move& move);
+
 private:
     void RemoveCapture_(const Move& move);
     void RestoreCapture_();
     bool IsCastlingPossible_(EColor color, const U64& castlingBlockers, ESquare rookSquare) const;
-    bool IsExpandedNotationNeeded_(const Move& move);
 
     void MakeShortCastling_(EColor color);
     void MakeLongCastling_(EColor color);
