@@ -13,3 +13,4 @@ enum EFigure
 
 const char* ToString(EFigure figureName);
 
+

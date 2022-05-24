@@ -10,6 +10,7 @@ enum EMoveType
     TWO_SQUARE_PAWN_MOVE,
     PAWN_TO_KNIGHT,
     PAWN_TO_BISHOP,
+    PAWN_TO_ROOK,
     PAWN_TO_QUEEN
 };
 

@@ -1,11 +1,61 @@
 #include "Move.h"
 #include <iostream>
 
+namespace
+{
+    std::string GetFigureNotationSymbol(const Move& move)
+    {
+        switch (move.GetFigure())
+        {
+        case PAWN: return "";
+        case KNIGHT: return "N";
+        case BISHOP: return "B";
+        case ROOK: return "R";
+        case QUEEN: return "Q";
+        case KING: return "K";
+        }
+    }
+}
+
 Move::Move(int from, int to, int figure, int capture, int move_type, int color)
 {
     move = 0;
     move = WRITE_FROM(from, move) | WRITE_TO(to, move) | WRITE_FIGURE(figure, move) |
         WRITE_CAPTURE(capture, move) | WRITE_MOVE_TYPE(move_type, move) | WRITE_COLOR(color, move);
+}
+
+std::string Move::GetNotation(bool isExpandedNotationNeeded)
+{
+    std::string figure_symbol = "";
+    std::string figure_capture_symbol = "";
+    std::string capture_symbol = "";
+
+    std::stringstream notation;
+    
+    if (GetFigure() == EFigure::PAWN && GetMoveType() == EMoveType::CAPTURE) {
+        return std::string(1, ToString(GetFrom())[0]) + capture_symbol + ToString(GetTo());
+    }
+
+    switch (GetMoveType())
+    {
+    case PAWN_TO_KNIGHT:  return std::string(ToString(GetTo())) + "=N";
+    case PAWN_TO_BISHOP:  return std::string(ToString(GetTo())) + "=B";
+    case PAWN_TO_ROOK:    return std::string(ToString(GetTo())) + "=R";
+    case PAWN_TO_QUEEN:   return std::string(ToString(GetTo())) + "=Q";
+    case SHORT_CASTLING:  return "O-O";
+    case LONG_CASTLING:   return "O-O-O";
+    case CAPTURE:
+        capture_symbol = "x";
+        break;
+    }
+
+    figure_symbol = GetFigureNotationSymbol(move);
+    notation << figure_symbol;
+    if (isExpandedNotationNeeded) {
+        notation << (ToString(GetFrom()));
+    }
+    notation << capture_symbol << ToString(GetTo());
+    return notation.str();
 }
 
 U32 Move::Get() const

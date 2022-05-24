@@ -7,6 +7,6 @@ int main()
 {
     using namespace misc;
     Game game(EPlayer::BOT, EPlayer::BOT);
-    game.play(10);
+    game.play(20);
 }
 

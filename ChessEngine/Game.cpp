@@ -10,7 +10,6 @@ Game::Game(EPlayer whitePlayerType, EPlayer blackPlayerType)
 void Game::play(int moveLimit)
 {
     //board->SetFEN("rnbqk2r/pppp1ppp/3b1n2/4p3/2B1P3/2N2N2/PPPP1PPP/R1BQK2R/");
-
     Move move;
     for(int nMove = 0; nMove < moveLimit && !board->IsGameOver(); ++nMove)
     {
@@ -22,4 +21,6 @@ void Game::play(int moveLimit)
         move.show();
         board->makeMove(move);
     }
+
+    std::cout << board->GetPGN();
 }

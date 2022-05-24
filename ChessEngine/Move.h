@@ -8,15 +8,18 @@
 #include "EFigure.h"
 #include "ESquare.h"
 #include "EDirection.h"
+#include <sstream>
 
 class Move
 {
 public:
+    friend bool operator==(const Move& lsh, const Move& rsh);
+
     Move() : move(0) {}
     Move(int from, int to, int figure, int capture, int move_type, int color);
     Move(int move) : move(move) {}
 
-    friend bool operator==(const Move& lsh, const Move& rsh);
+    std::string GetNotation(bool isExpandedNotationNeeded=false);
 
     static Move GetWhiteShortCastlingMove() { return Move(moves::WHITE_SHORTCASTLING); }
     static Move GetBlackShortCastlingMove() { return Move(moves::BLACK_SHORTCASTLING); }

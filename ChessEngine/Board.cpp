@@ -213,16 +213,30 @@ void Board::SetFEN(std::string fen)
     }
 }
 
+std::string Board::GetPGN()
+{
+    std::string PGN = "";
+    std::unique_ptr<Board> tmpBoard(new Board());
+
+    int i = 0;
+    for (auto moveIter = madedMoves.begin(); moveIter != madedMoves.end(); ++moveIter, ++i) {
+        if (i % 2 == 0) {
+            PGN += std::to_string(i) + ". ";
+        }
+        PGN += (*moveIter).GetNotation(tmpBoard->IsExpandedNotationNeeded_(*moveIter)) + " ";
+        tmpBoard->makeMove(*moveIter);
+    }
+    return PGN;
+}
+
 bool Board::IsKingAttacked(EColor color) const
 {
     U64 attackRays = GetAttackRays((color == WHITE) ? BLACK : WHITE);
     auto kingIter = figures[color][KING].begin();
 
-    if (kingIter == figures[color][KING].end())
-    {
+    if (kingIter == figures[color][KING].end()) {
         return true;
     }
-
     return TO_BITBOARD((*kingIter)->GetSquare()) & attackRays;
 }
 
@@ -444,6 +458,21 @@ bool Board::IsCastlingPossible_(EColor color, const U64& castlingBlockers, ESqua
     U64 isCastlingUnderAttack = GetAttackRays(oppositeColor) & castlingBlockers;
     
     return !(isBlockersBetweenKingAndRook || isCastlingUnderAttack);
+}
+
+bool Board::IsExpandedNotationNeeded_(const Move& move)
+{
+    MoveList moveList = GenerateMoveList(move.GetMoveColor());
+
+    for (auto moveIter = moveList.Get().begin(); moveIter != moveList.Get().end(); moveIter++) {
+        const Move& m = *moveIter;
+        bool isAnotherFigureGoesOnSameSquare = m.GetFigure() == move.GetFigure() &&
+            m.GetTo() == move.GetTo() && m.GetFrom() != move.GetFrom();
+        if (isAnotherFigureGoesOnSameSquare) {
+            return true;
+        }
+    }
+    return false;
 }
 
 void Board::MakeShortCastling_(EColor color)

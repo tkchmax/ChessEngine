@@ -30,6 +30,7 @@ public:
 
     void Clear();
     void SetFEN(std::string fen);
+    std::string GetPGN();
 
     bool IsKingAttacked(EColor color) const;
     bool IsShortCastlingPossible(EColor color) const;
@@ -48,6 +49,7 @@ private:
     void RemoveCapture_(const Move& move);
     void RestoreCapture_();
     bool IsCastlingPossible_(EColor color, const U64& castlingBlockers, ESquare rookSquare) const;
+    bool IsExpandedNotationNeeded_(const Move& move);
 
     void MakeShortCastling_(EColor color);
     void MakeLongCastling_(EColor color);
@@ -55,6 +57,7 @@ private:
     void UndoLongCastling_(EColor color);
     void MoveFigure_(EFigure figureName, EColor color, ESquare from, ESquare to);
     void MoveBackFigure_(EFigure figureName, EColor color, ESquare from, ESquare to);
+
 
 private:
     Figures figures;

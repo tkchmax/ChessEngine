@@ -41,7 +41,6 @@ protected:
     ESquare square;
     int cost;
     std::stack<ESquare> squaresCache;
-    //std::array<int, 64> prioritySquares;
 };
 
 class Pawn : public Figure
