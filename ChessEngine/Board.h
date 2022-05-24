@@ -28,6 +28,9 @@ public:
     EGamePhase GetGamePhase() { return gamePhase; }
     U64 GetAttackRays(EColor color) const;
 
+    void Clear();
+    void SetFEN(std::string fen);
+
     bool IsKingAttacked(EColor color) const;
     bool IsShortCastlingPossible(EColor color) const;
     bool IsLongCastlingPossible(EColor color) const;

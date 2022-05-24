@@ -118,10 +118,110 @@ U64 Board::GetAttackRays(EColor color) const
     return attackRays;
 }
 
+void Board::Clear()
+{
+    for (int colorInt = 0; colorInt < 2; ++colorInt) {
+        for (int figureInt = 0; figureInt < 6; ++figureInt) {
+            figures[colorInt][figureInt].clear();
+        }
+        for (int i = 0; i < 64; ++i) {
+            figureFromCoord[colorInt][i] = NO_FIGURE;
+        }
+    }
+}
+
+void Board::SetFEN(std::string fen)
+{
+    Clear();
+
+    int board_cur = 72;
+    int cur = -1;
+    for (int i = 0; i < 8; ++i) {
+        board_cur -= 16;
+        cur++;
+        while (fen[cur] != '/')
+        {
+            ESquare square = static_cast<ESquare>(board_cur);
+            switch (fen[cur])
+            {
+            case 'K':
+                figures[WHITE][KING].push_back(std::make_unique<King>(WHITE, square));
+                figureFromCoord[WHITE][square] = KING;
+                board_cur++;
+                break;
+            case 'k':
+                figures[BLACK][KING].push_back(std::make_unique<King>(BLACK, square));
+                figureFromCoord[BLACK][square] = KING;
+                board_cur++;
+                break;
+            case 'Q':
+                figures[WHITE][QUEEN].push_back(std::make_unique<Queen>(WHITE, square));
+                figureFromCoord[WHITE][square] = QUEEN;
+                board_cur++;
+                break;
+            case 'q':
+                figures[BLACK][QUEEN].push_back(std::make_unique<Queen>(BLACK, square));
+                figureFromCoord[BLACK][square] = QUEEN;
+                board_cur++;
+                break;
+            case 'B':
+                figures[WHITE][BISHOP].push_back(std::make_unique<Bishop>(WHITE, square));
+                figureFromCoord[WHITE][square] = BISHOP;
+                board_cur++;
+                break;
+            case 'b':
+                figures[BLACK][BISHOP].push_back(std::make_unique<Bishop>(BLACK, square));
+                figureFromCoord[BLACK][square] = BISHOP;
+                board_cur++;
+                break;
+            case 'N':
+                figures[WHITE][KNIGHT].push_back(std::make_unique<Knight>(WHITE, square));
+                figureFromCoord[WHITE][square] = KNIGHT;
+                board_cur++;
+                break;
+            case 'n':
+                figures[BLACK][KNIGHT].push_back(std::make_unique<Knight>(BLACK, square));
+                figureFromCoord[BLACK][square] = KNIGHT;
+                board_cur++;
+                break;
+            case 'P':
+                figures[WHITE][PAWN].push_back(std::make_unique<Pawn>(WHITE, square));
+                figureFromCoord[WHITE][square] = PAWN;
+                board_cur++;
+                break;
+            case 'p':
+                figures[BLACK][PAWN].push_back(std::make_unique<Pawn>(BLACK, square));
+                figureFromCoord[BLACK][square] = PAWN;
+                board_cur++;
+                break;
+            case 'R':
+                figures[WHITE][ROOK].push_back(std::make_unique<Rook>(WHITE, square));
+                figureFromCoord[WHITE][square] = ROOK;
+                board_cur++;
+                break;
+            case 'r':
+                figures[BLACK][ROOK].push_back(std::make_unique<Rook>(BLACK, square));
+                figureFromCoord[BLACK][square] = ROOK;
+                board_cur++;
+                break;
+            default:
+                board_cur += (fen[cur] - '0');
+                break;
+            }
+            cur++;
+        }
+    }
+}
+
 bool Board::IsKingAttacked(EColor color) const
 {
     U64 attackRays = GetAttackRays((color == WHITE) ? BLACK : WHITE);
     auto kingIter = figures[color][KING].begin();
+
+    if (kingIter == figures[color][KING].end())
+    {
+        return true;
+    }
 
     return TO_BITBOARD((*kingIter)->GetSquare()) & attackRays;
 }
@@ -207,6 +307,16 @@ MoveList Board::GenerateMoveList(const std::unique_ptr<Figure>& figure) const
 MoveList Board::GenerateMoveList(EColor color, bool isCaptureOnly) const
 {
     MoveList moveList;
+
+    if (!isCaptureOnly) {
+        if (IsShortCastlingPossible(color)) {
+            moveList.add((color == WHITE) ? Move::GetWhiteShortCastlingMove() : Move::GetBlackShortCastlingMove());
+        }
+        if (IsLongCastlingPossible(color)) {
+            moveList.add((color == WHITE) ? Move::GetWhiteLongCastlingMove() : Move::GetBlackLongCastlingMove());
+        }
+    }
+
     for (unsigned figureInt = 0; figureInt < EFigure::COUNT; ++figureInt) {
         const auto& list = figures[color][figureInt];
         for (auto figureIter = list.begin(); figureIter != list.end(); ++figureIter) {
@@ -216,15 +326,6 @@ MoveList Board::GenerateMoveList(EColor color, bool isCaptureOnly) const
             else {
                 moveList += GenerateMoveList(*figureIter);
             }
-        }
-    }
-
-    if (!isCaptureOnly) {
-        if (IsShortCastlingPossible(color)) {
-            moveList.add((color == WHITE) ? Move::GetWhiteShortCastlingMove() : Move::GetBlackShortCastlingMove());
-        }
-        if (IsLongCastlingPossible(color)) {
-            moveList.add((color == WHITE) ? Move::GetWhiteLongCastlingMove() : Move::GetBlackLongCastlingMove());
         }
     }
 
@@ -261,14 +362,6 @@ void Board::makeMove(const Move& move)
         RemoveCapture_(move);
     }
 
-    //auto figureIter = GetFigureIter(move.GetMoveColor(), move.GetFigure(), move.GetFrom());
-    //if (figureIter == figures[move.GetMoveColor()][move.GetFigure()].end())
-    //{
-    //    std::cout << "1!!!!!!-----------";
-    //}
-    //(*figureIter)->move(move.GetTo());
-    //figureFromCoord[move.GetMoveColor()][move.GetFrom()] = EFigure::NO_FIGURE;
-    //figureFromCoord[move.GetMoveColor()][move.GetTo()] = move.GetFigure();
     MoveFigure_(move.GetFigure(), move.GetMoveColor(), move.GetFrom(), move.GetTo());
 
     switch (move.GetMoveType()) {
@@ -293,10 +386,6 @@ void Board::undoMove()
         RestoreCapture_();
     }
 
-    //auto figureIter = GetFigureIter(lastMove.GetMoveColor(), lastMove.GetFigure(), lastMove.GetTo());
-    //(*figureIter)->moveBack();
-    //figureFromCoord[lastMove.GetMoveColor()][lastMove.GetTo()] = EFigure::NO_FIGURE;
-    //figureFromCoord[lastMove.GetMoveColor()][lastMove.GetFrom()] = lastMove.GetFigure();
     MoveBackFigure_(lastMove.GetFigure(), lastMove.GetMoveColor(), lastMove.GetFrom(), lastMove.GetTo());
 
     switch (lastMove.GetMoveType()) {

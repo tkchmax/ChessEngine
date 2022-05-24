@@ -24,6 +24,13 @@ void MoveList::operator+=(const MoveList& other)
     }
 }
 
+void MoveList::replaceToPriorities(std::list<Move>::const_iterator moveIter)
+{
+    Move temp = *moveIter;
+    moves.erase(moveIter);
+    add(temp, true);
+}
+
 void MoveList::mvv_lva()
 {
     auto captures_begin = std::next(moves.end(), -nSilent - nCapture);

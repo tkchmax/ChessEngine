@@ -16,6 +16,8 @@ public:
     Move(int from, int to, int figure, int capture, int move_type, int color);
     Move(int move) : move(move) {}
 
+    friend bool operator==(const Move& lsh, const Move& rsh);
+
     static Move GetWhiteShortCastlingMove() { return Move(moves::WHITE_SHORTCASTLING); }
     static Move GetBlackShortCastlingMove() { return Move(moves::BLACK_SHORTCASTLING); }
     static Move GetWhiteLongCastlingMove() { return Move(moves::WHITE_LONGCASTLING); }

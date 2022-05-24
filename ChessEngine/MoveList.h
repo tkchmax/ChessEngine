@@ -14,7 +14,7 @@ public:
     void operator+=(const MoveList& other);
 
     const std::list<Move>& Get() { return moves; }
-    
+    void replaceToPriorities(std::list<Move>::const_iterator moveIter);
     void mvv_lva();
    private:
     std::list<Move> moves;

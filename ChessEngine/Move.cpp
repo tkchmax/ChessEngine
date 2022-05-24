@@ -55,3 +55,8 @@ void Move::show() const
     std::cout << "U32: " << move << std::endl;
     std::cout << std::endl;
 }
+
+bool operator==(const Move& lsh, const Move& rsh)
+{
+    return lsh.move == rsh.move;
+}

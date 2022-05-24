@@ -57,6 +57,11 @@ int Bot::AlphaBeta(int depth, int alpha, int beta, EColor color)
     MoveList moves = board->GenerateMoveList(color);
     moves.mvv_lva();
 
+    auto killerMove = std::find(moves.Get().begin(), moves.Get().end(), bestMoves[depth - 1]);
+    if (killerMove != moves.Get().end()) {
+        moves.replaceToPriorities(killerMove);
+    }
+
     auto moveIter = moves.Get().begin();
     Move bestMove = *moveIter;
 
@@ -161,6 +166,6 @@ std::unique_ptr<Player> Player::Create(EPlayer type, std::shared_ptr<Board> boar
 {
     switch (type)
     {
-        case EPlayer::BOT: return std::make_unique<Bot>(board, color);
+        case EPlayer::BOT: return std::make_unique<Bot>(board, color, 6);
     }
 }
