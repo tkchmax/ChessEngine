@@ -4,17 +4,19 @@
 void MoveList::add(const Move& move, bool isPriorityMove)
 {
     if (isPriorityMove) {
-        moves.push_front(move);
-        nPriority += 1;
+        addPriority_(move);
     }
     else if (move.GetMoveType() == EMoveType::CAPTURE) {
-        moves.insert(std::next(moves.begin(), nPriority), move);
-        nCapture += 1;
+        addCapture_(move);
     }
     else {
-        moves.push_back(move);
-        nSilent += 1;
-    }
+        if (IsPawnTransformType(move.GetMoveType()) && move.GetCapture() != EFigure::NO_FIGURE) {
+            addCapture_(move);
+        }
+        else {
+            addSilent_(move);
+        }
+     }
 }
 
 void MoveList::operator+=(const MoveList& other)
@@ -47,6 +49,24 @@ void MoveList::mvv_lva()
         });
 
     moves.splice(captures_end, sorted_captures);
+}
+
+void MoveList::addSilent_(const Move& move)
+{
+    moves.push_back(move);
+    nSilent += 1;
+}
+
+void MoveList::addCapture_(const Move& move)
+{
+    moves.insert(std::next(moves.begin(), nPriority), move);
+    nCapture += 1;
+}
+
+void MoveList::addPriority_(const Move& move)
+{
+    moves.push_front(move);
+    nPriority += 1;
 }
 
 std::ostream& operator<<(std::ostream& out, const MoveList& moveList)

@@ -13,6 +13,7 @@ class Figure
 {
 public:
     static std::list<std::unique_ptr<Figure>> Create(EFigure figureName, EColor color, std::initializer_list<ESquare> squares);
+    static std::unique_ptr<Figure> Create(EFigure figureName, EColor color, ESquare square);
 
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const = 0;
     U64 GetSilentMoves(const U64& blockers, const U64& opposite) const;

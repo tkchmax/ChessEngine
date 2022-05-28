@@ -12,7 +12,16 @@ std::string ToString(EMoveType move_type)
         case EMoveType::TWO_SQUARE_PAWN_MOVE: return "TWO_SQUARE_PAWN_MOVE";
         case EMoveType::PAWN_TO_KNIGHT: return "PAWN_TO_KNIGHT";
         case EMoveType::PAWN_TO_BISHOP: return "PAWN_TO_BISHOP";
+        case EMoveType::PAWN_TO_ROOK: return "PAWN_TO_ROOK";
         case EMoveType::PAWN_TO_QUEEN: return "PAWN_TO_QUEEN";
         default: return "ERROR TYPE";
     }
+}
+
+bool IsPawnTransformType(EMoveType moveType)
+{
+    return moveType == EMoveType::PAWN_TO_KNIGHT ||
+        moveType == EMoveType::PAWN_TO_BISHOP ||
+        moveType == EMoveType::PAWN_TO_ROOK ||
+        moveType == EMoveType::PAWN_TO_QUEEN;
 }

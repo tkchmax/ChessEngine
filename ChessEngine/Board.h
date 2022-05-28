@@ -38,9 +38,7 @@ public:
     bool IsMoveLegal(const Move& move) const;
     bool IsGameOver() const;
 
-    MoveList GenerateMoveList(const std::unique_ptr<Figure>& figure) const;
     MoveList GenerateMoveList(EColor color, bool isCaptureOnly = false) const;
-    MoveList GenerateCaptureMoveList(const std::unique_ptr<Figure>& figure) const;
 
     void makeMove(const Move& move);
     void undoMove();
@@ -48,12 +46,17 @@ public:
     bool IsExpandedNotationNeeded(const Move& move);
 
 private:
+    MoveList GenerateMoveList_(U64 bitboard, EFigure figureName, ESquare fromSqaure, EColor color) const;
+    MoveList GenerateMoveList_(const std::unique_ptr<Figure>& figure, bool isCaptureOnly) const;
+
     void RemoveCapture_(const Move& move);
     void RestoreCapture_();
     bool IsCastlingPossible_(EColor color, const U64& castlingBlockers, ESquare rookSquare) const;
 
     void MakeShortCastling_(EColor color);
     void MakeLongCastling_(EColor color);
+    void MakePawnTransformMove_(const Move& move);
+    void UndoPawnTransformMove_();
     void UndoShortCastling_(EColor color);
     void UndoLongCastling_(EColor color);
     void MoveFigure_(EFigure figureName, EColor color, ESquare from, ESquare to);
@@ -63,7 +66,8 @@ private:
 private:
     Figures figures;
     FigureFromCoord figureFromCoord;
-    std::stack<std::unique_ptr<Figure>> figureCache;
+    std::stack<std::unique_ptr<Figure>> captureStack;
+    std::stack<std::unique_ptr<Figure>> pawnTransformStack;
     std::list<Move> madedMoves;
     EGamePhase gamePhase;
 };

@@ -48,6 +48,7 @@ Move Bot::ChooseMove()
     int score = AlphaBeta(depth, -INF, INF, color);
     Move move = bestMoves[depth - 1];
     std::cout << move.GetNotation(board->IsExpandedNotationNeeded(move)) << std::endl;
+    if(move.Get() == 0) {}//!!!
     return move;
 }
 
@@ -66,6 +67,9 @@ int Bot::AlphaBeta(int depth, int alpha, int beta, EColor color)
     }
 
     auto moveIter = moves.Get().begin();
+    if (moveIter == moves.Get().end()) {
+        return -INF;
+    }
     Move bestMove = *moveIter;
 
     while (moveIter != moves.Get().end() && alpha < beta) {

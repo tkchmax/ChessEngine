@@ -16,7 +16,12 @@ public:
     const std::list<Move>& Get() { return moves; }
     void replaceToPriorities(std::list<Move>::const_iterator moveIter);
     void mvv_lva();
-   private:
+
+private:
+    void addSilent_(const Move& move);
+    void addCapture_(const Move& move);
+    void addPriority_(const Move& move);
+private:
     std::list<Move> moves;
     int nPriority, nCapture, nSilent;
 };

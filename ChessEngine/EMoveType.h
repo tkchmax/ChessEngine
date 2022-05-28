@@ -15,3 +15,4 @@ enum EMoveType
 };
 
 std::string ToString(EMoveType);
+bool IsPawnTransformType(EMoveType);

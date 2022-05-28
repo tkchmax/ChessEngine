@@ -3,6 +3,82 @@
 
 #include <cassert>
 
+namespace
+{
+    std::array<U64, 64> GenerateKnightMoves()
+    {
+        using namespace bitboards;
+
+        std::array<U64, 64> knightMoves{};
+        for (int i = 0; i < 64; ++i)
+        {
+            std::uint64_t ray = 0;
+            ray |= TO_BITBOARD(i + 17) | TO_BITBOARD(i + 15) | TO_BITBOARD(i + 10) | TO_BITBOARD(i + 6);
+            if (i >= (int)ESquare::H2) {
+                ray |= TO_BITBOARD(i - 16 + 1);
+            }
+            if (i >= (int)ESquare::B3) {
+                ray |= TO_BITBOARD(i - 16 - 1);
+            }
+            if (i >= (int)ESquare::G1) {
+                ray |= (1ULL << i - 8 + 2);
+            }
+            if (i >= (int)ESquare::C2) {
+                ray |= (1ULL << i - 8 - 2);
+            }
+
+            if (i % 8 >= 6) {
+                ray &= NOT_A_FILE & NOT_B_FILE;
+            }
+            if (i % 8 <= 1) {
+                ray &= NOT_H_FILE & NOT_G_FILE;
+            }
+            if (i >= (int)ESquare::A7 && i <= (int)ESquare::H8) {
+                ray &= NOT_1_RANK & NOT_2_RANK;
+            }
+
+            knightMoves[i] = ray;
+        }
+        return knightMoves;
+    }
+    std::array<U64, 64> GenerateKingMoveRays()
+    {
+        using namespace bitboards;
+
+        std::array<U64, 64> kingRays;
+        for (int i = 0; i < 64; ++i)
+        {
+            std::uint64_t ray = 0;
+            ray |= TO_BITBOARD(i + 8) + TO_BITBOARD(i + 1) | TO_BITBOARD(i + 7) | TO_BITBOARD(i + 9);
+
+            if (i >= (int)ESquare::B1) {
+                ray |= TO_BITBOARD(i - 1);
+            }
+            if (i >= (int)ESquare::H1) {
+                ray |= TO_BITBOARD(i - 7);
+            }
+            if (i >= (int)ESquare::A2) {
+                ray |= TO_BITBOARD(i - 8);
+            }
+            if (i >= (int)ESquare::B2)
+                ray |= TO_BITBOARD(i - 9);
+
+            if (i % 8 == 0) {
+                ray &= NOT_H_FILE;
+            }
+            if (i % 8 == 7) {
+                ray &= NOT_A_FILE;
+            }
+            if (i >= (int)ESquare::A8 && i <= (int)ESquare::H8) {
+                ray &= NOT_1_RANK;
+            }
+
+            kingRays[i] = ray;
+        }
+        return kingRays;
+    }
+}
+
 std::list<std::unique_ptr<Figure>> Figure::Create(EFigure figureName, EColor color, std::initializer_list<ESquare> init_squares)
 {
     std::list<std::unique_ptr<Figure>> figures;
@@ -33,6 +109,21 @@ std::list<std::unique_ptr<Figure>> Figure::Create(EFigure figureName, EColor col
     }
 
     return figures;
+}
+
+std::unique_ptr<Figure> Figure::Create(EFigure figureName, EColor color, ESquare square)
+{
+    switch (figureName)
+    {
+    case EFigure::PAWN: return std::make_unique<Pawn>(color, square);
+    case EFigure::KNIGHT: return std::make_unique<Knight>(color, square);
+    case EFigure::BISHOP: return std::make_unique<Bishop>(color, square);
+    case EFigure::ROOK: return std::make_unique<Rook>(color, square);
+    case EFigure::QUEEN: return std::make_unique<Queen>(color, square);
+    case EFigure::KING: return std::make_unique<King>(color, square);
+    default:
+        assert(false);
+    }
 }
 
 U64 Figure::GetSilentMoves(const U64& blockers, const U64& opposite) const
@@ -84,14 +175,16 @@ U64 Pawn::GetMoves(const U64& blockers, const U64& opposite) const
     }
 
     //capture moves
-    moves |= ((TO_BITBOARD((int)square + props.leftHook) & props.not_rsh_file) | (TO_BITBOARD((int)square + props.rightHook)) & props.not_lsh_file) & opposite;
+    moves |= ((TO_BITBOARD((int)square + props.leftHook) & props.not_rsh_file) |
+        (TO_BITBOARD((int)square + props.rightHook)) & props.not_lsh_file) & opposite;
 
     return moves;
 }
 
 U64 Knight::GetMoves(const U64& blockers, const U64& opposite) const
 {
-    return Rays::Get().GetKnightMoves()[(int)square];
+    static const std::array<U64, 64> moves = GenerateKnightMoves();
+    return moves[(int)square];
 }
 
 U64 Bishop::GetMoves(const U64& blockers, const U64& opposite) const
@@ -195,6 +288,7 @@ U64 Queen::GetMoves(const U64& blockers, const U64& opposite) const
 
 U64 King::GetMoves(const U64& blockers, const U64& opposite) const
 {
-    return Rays::Get().GetKingMoves()[square];
+    static const std::array<U64, 64> moves = GenerateKingMoveRays();
+    return moves[(int)square];
 }
 
