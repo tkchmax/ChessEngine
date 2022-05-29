@@ -13,6 +13,7 @@ namespace
         }
         return moveList;
     }
+
 }
 
 Board::Board()
@@ -52,6 +53,12 @@ Board::Board()
     gamePhase = EGamePhase::OPENNING;
 }
 
+Board::Board(const Board& other)
+{
+    SetFEN(other.GetFEN());
+    gamePhase = other.gamePhase;
+}
+
 Board::FigureIter Board::GetFigureIter(EColor color, EFigure figure, ESquare square)
 {
     auto& list = figures[color][figure];
@@ -86,12 +93,12 @@ U64 Board::GetSideBoard(EColor color) const
     return sideBoard;
 }
 
-unsigned int Board::GetFigureCount(EColor color, EFigure figureName)
+unsigned int Board::GetFigureCount(EColor color, EFigure figureName) const
 {
     return figures[color][figureName].size();
 }
 
-unsigned int Board::GetSideFiguresCount(EColor color)
+unsigned int Board::GetSideFiguresCount(EColor color) const
 {
     int count = 0;
     for (int figureInt = 0; figureInt < EFigure::COUNT; ++figureInt) {
@@ -100,7 +107,7 @@ unsigned int Board::GetSideFiguresCount(EColor color)
     return count;
 }
 
-unsigned int Board::GetFigureSumMobility(EColor color, EFigure figureName)
+unsigned int Board::GetFigureSumMobility(EColor color, EFigure figureName) const
 {
     EColor oppositeColor = (color == WHITE) ? BLACK : WHITE;
     std::uint64_t blockers = GetSideBoard(color);
@@ -223,6 +230,69 @@ void Board::SetFEN(std::string fen)
             cur++;
         }
     }
+}
+
+char Board::FigureToChar(ESquare square) const
+{
+    int figureInt = figureFromCoord[WHITE][square];
+    if (figureInt != NO_FIGURE)
+    {
+        switch (figureInt)
+        {
+        case EFigure::PAWN: return 'P';
+        case EFigure::KNIGHT: return 'N';
+        case EFigure::BISHOP: return 'B';
+        case EFigure::ROOK: return 'R';
+        case EFigure::QUEEN: return 'Q';
+        case EFigure::KING: return 'K';
+        }
+    }
+    
+    figureInt = figureFromCoord[BLACK][square];
+    if (figureInt != NO_FIGURE) {
+        switch (figureInt)
+        {
+        case EFigure::PAWN: return 'p';
+        case EFigure::KNIGHT: return 'n';
+        case EFigure::BISHOP: return 'b';
+        case EFigure::ROOK: return 'r';
+        case EFigure::QUEEN: return 'q';
+        case EFigure::KING: return 'k';
+        }
+    }
+    return '0';
+}
+
+std::string Board::GetFEN() const
+{
+    std::string fen;
+    int noFigureCount = 0;
+
+    std::array<std::array<char, 8>, 8> charBoard{};
+    for (int i = 0; i < 64; ++i) {
+        charBoard[i / 8][i % 8] = FigureToChar(static_cast<ESquare>(i));
+    }
+
+    char cur;
+    for (int rank = 7; rank >= 0; --rank) {
+        for (int file = 0; file < 8; ++file) {
+            cur = charBoard[rank][file];
+            if (cur == '0') {
+                noFigureCount++;
+            }
+            else {
+                fen += (noFigureCount > 0) ? std::to_string(noFigureCount) + std::string(1,cur) : std::string(1,cur);
+                noFigureCount = 0;
+            }
+        }
+        if (noFigureCount > 0) {
+            fen += std::to_string(noFigureCount);
+        }
+        fen += '/';
+        noFigureCount = 0;
+    }
+    return fen;
+    
 }
 
 std::string Board::GetPGN()
@@ -583,12 +653,6 @@ void Board::UndoLongCastling_(EColor color)
 void Board::MoveFigure_(EFigure figureName, EColor color, ESquare from, ESquare to)
 {
     auto figureIter = GetFigureIter(color, figureName, from);
-    if (figureIter == figures[color][figureName].end())
-    {
-        std::cout << color << std::endl;
-        std::cout << from << std::endl;
-        std::cout << to << std::endl;
-    }
     assert(figureIter != figures[color][figureName].end());
     (*figureIter)->move(to);
     figureFromCoord[color][from] = EFigure::NO_FIGURE;

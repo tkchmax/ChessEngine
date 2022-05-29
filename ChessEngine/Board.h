@@ -18,18 +18,22 @@ public:
     using FigureFromCoord = std::array<std::array<std::uint8_t, 64>, 2>;
 
     Board();
-    const Figures& GetFigures() { return figures; }
+    Board(const Board& other);
+
+    const Figures& GetFigures() const { return figures; }
     FigureIter GetFigureIter(EColor color, EFigure figure, ESquare square);
     FigureIterConst GetFigureIter(EColor color, EFigure figure, ESquare square) const;
     U64 GetSideBoard(EColor color) const;
-    unsigned int GetFigureCount(EColor color, EFigure figureName);
-    unsigned int GetSideFiguresCount(EColor color);
-    unsigned int GetFigureSumMobility(EColor color, EFigure figureName);
-    EGamePhase GetGamePhase() { return gamePhase; }
+    unsigned int GetFigureCount(EColor color, EFigure figureName) const;
+    unsigned int GetSideFiguresCount(EColor color) const;
+    unsigned int GetFigureSumMobility(EColor color, EFigure figureName) const;
+    EGamePhase GetGamePhase() const { return gamePhase; }
     U64 GetAttackRays(EColor color) const;
 
     void Clear();
     void SetFEN(std::string fen);
+    char FigureToChar(ESquare square) const;
+    std::string GetFEN() const;
     std::string GetPGN();
 
     bool IsKingAttacked(EColor color) const;

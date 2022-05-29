@@ -1,6 +1,9 @@
 #include <iostream>
 #include "Game.h"
 
+#include "Evaluate.h"
+#include "Search.h"
+
 using namespace std;
 
 int main()

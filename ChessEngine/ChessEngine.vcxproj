@@ -146,6 +146,7 @@
     <ClCompile Include="EFigure.cpp" />
     <ClCompile Include="EMoveType.cpp" />
     <ClCompile Include="ESquare.cpp" />
+    <ClCompile Include="Evaluate.cpp" />
     <ClCompile Include="Figure.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="main.cpp" />
@@ -154,6 +155,7 @@
     <ClCompile Include="MoveList.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Rays.cpp" />
+    <ClCompile Include="Search.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Board.h" />
@@ -165,6 +167,7 @@
     <ClInclude Include="EGamePhase.h" />
     <ClInclude Include="EMoveType.h" />
     <ClInclude Include="ESquare.h" />
+    <ClInclude Include="Evaluate.h" />
     <ClInclude Include="Figure.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Misc.h" />
@@ -172,6 +175,7 @@
     <ClInclude Include="MoveList.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Rays.h" />
+    <ClInclude Include="Search.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

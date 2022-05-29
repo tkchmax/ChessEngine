@@ -30,17 +30,9 @@ public:
         Player(board, color),
         depth(depth) {}
     virtual Move ChooseMove() override;
-    int Evaluate(EColor color) const;
-private:
-    int AlphaBeta(int depth, int alpha, int beta, EColor color);
-    int Quies(EColor color, int alpha, int beta);
-    int GetMaterialEval(EFigure figure) const;
-    int GetStrategyEval(EFigure figure) const;
-
 
 private:
     unsigned int depth;
-    std::vector<Move> bestMoves;    
 };
 
 class ConsolePlayer : public Player
