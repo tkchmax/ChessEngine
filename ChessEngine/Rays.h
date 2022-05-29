@@ -11,14 +11,10 @@ class Rays
 {
 public:
     using RaysArray = std::array<std::array<U64, 64>, 8>;
-    using KnightMoveRays = std::array<U64, 64>;
-    using KingMoveRays = std::array<U64, 64>;
 
     static const Rays& Get();
 
     const RaysArray& GetRays() const { return rays; }
-    const KnightMoveRays& GetKnightMoves() const { return knightMoves; }
-    const KnightMoveRays& GetKingMoves() const { return kingMoves; }
 
 private:
     Rays();
@@ -27,9 +23,6 @@ private:
 
 private:
     RaysArray rays;
-    KnightMoveRays knightMoves;
-    KingMoveRays kingMoves;
-
 };
 
 #endif // !RAYS_H_

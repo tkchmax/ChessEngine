@@ -11,80 +11,6 @@ namespace
     {
         return(bitboard >> 1) & bitboards::NOT_H_FILE;
     }
-
-    Rays::KnightMoveRays GenerateKnightMoveRays()
-    {
-        using namespace bitboards;
-
-        Rays::KnightMoveRays knightMoves{};
-        for (int i = 0; i < 64; ++i)
-        {
-            std::uint64_t ray = 0;
-            ray |= TO_BITBOARD(i + 17) | TO_BITBOARD(i + 15) | TO_BITBOARD(i + 10) | TO_BITBOARD(i + 6);
-            if (i >= (int)ESquare::H2) {
-                ray |= TO_BITBOARD(i - 16 + 1);
-            }
-            if (i >= (int)ESquare::B3) {
-                ray |= TO_BITBOARD(i - 16 - 1);
-            }
-            if (i >= (int)ESquare::G1) {
-                ray |= (1ULL << i - 8 + 2);
-            }
-            if (i >= (int)ESquare::C2) {
-                ray |= (1ULL << i - 8 - 2);
-            }
-
-            if (i % 8 >= 6) {
-                ray &= NOT_A_FILE & NOT_B_FILE;
-            }
-            if (i % 8 <= 1) {
-                ray &= NOT_H_FILE & NOT_G_FILE;
-            }
-            if (i >= (int)ESquare::A7 && i <= (int)ESquare::H8) {
-                ray &= NOT_1_RANK & NOT_2_RANK;
-            }
-
-            knightMoves[i] = ray;
-        }
-        return knightMoves;
-    }
-
-    Rays::KingMoveRays GenerateKingMoveRays()
-    {
-        using namespace bitboards;
-
-        Rays::KingMoveRays kingRays;
-        for (int i = 0; i < 64; ++i)
-        {
-            std::uint64_t ray = 0;
-            ray |= TO_BITBOARD(i + 8) + TO_BITBOARD(i + 1) | TO_BITBOARD(i + 7) | TO_BITBOARD(i + 9);
-
-            if (i >= (int)ESquare::B1) {
-                ray |= TO_BITBOARD(i - 1);
-            }
-            if (i >= (int)ESquare::H1) {
-                ray |= TO_BITBOARD(i - 7);
-            }
-            if (i >= (int)ESquare::A2) {
-                ray |= TO_BITBOARD(i - 8);
-            }
-            if (i >= (int)ESquare::B2)
-                ray |= TO_BITBOARD(i - 9);
-
-            if (i % 8 == 0) {
-                ray &= NOT_H_FILE;
-            }
-            if (i % 8 == 7) {
-                ray &= NOT_A_FILE;
-            }
-            if (i >= (int)ESquare::A8 && i <= (int)ESquare::H8) {
-                ray &= NOT_1_RANK;
-            }
-
-            kingRays[i] = ray;
-        }
-        return kingRays;
-    }
 }
 
 const Rays& Rays::Get()
@@ -181,7 +107,4 @@ Rays::Rays()
             rays[EDirection::SOUTH_EAST][y - x] = se;
         }
     }
-
-    knightMoves = GenerateKnightMoveRays();
-    kingMoves = GenerateKingMoveRays();
 }
