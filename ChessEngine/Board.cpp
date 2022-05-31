@@ -14,6 +14,27 @@ namespace
         return moveList;
     }
 
+    bool RightCastlings(ESquare rookSquare, EColor color, const std::list<Move>& madedMoves) {
+        for (const auto& move : madedMoves) {
+            if (move.GetFrom() == rookSquare || (move.GetFigure() == KING && move.GetMoveColor() == color)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    bool Right00(EColor color, const std::list<Move>& madedMoves) {
+        ESquare rookSquare = (color == WHITE) ?
+            positions_square::WHITE_RSH_ROOK :
+            positions_square::BLACK_RSH_ROOK;
+        return RightCastlings(rookSquare, color, madedMoves);
+    }
+
+    bool Right000(EColor color, const std::list<Move>& madedMoves) {
+        ESquare rookSquare = (color == WHITE) ?
+            positions_square::WHITE_LSH_ROOK :
+            positions_square::BLACK_LSH_ROOK;
+        return RightCastlings(rookSquare, color, madedMoves);
+    }
 }
 
 Board::Board()
@@ -64,7 +85,7 @@ Board::FigureIter Board::GetFigureIter(EColor color, EFigure figure, ESquare squ
     auto& list = figures[color][figure];
     auto iter = std::find_if(list.begin(), list.end(), [&](const auto& figure) {
         return figure->GetSquare() == square;
-    });
+        });
 
     return iter;
 }
@@ -153,83 +174,97 @@ void Board::SetFEN(std::string fen)
 {
     Clear();
 
-    int board_cur = 72;
-    int cur = -1;
-    for (int i = 0; i < 8; ++i) {
-        board_cur -= 16;
-        cur++;
-        while (fen[cur] != '/')
+    int squareInt = ESquare::A8;
+
+    int cur = 0;
+    for (; fen[cur] != ' '; ++cur) {
+        if ((int)fen[cur] >= 49 && (int)fen[cur] <= 56) {
+            squareInt += ((int)fen[cur]) - 48;
+        }
+        else if (fen[cur] == '/') {
+            squareInt -= 16;
+        }
+        else
         {
-            ESquare square = static_cast<ESquare>(board_cur);
+            ESquare square = static_cast<ESquare>(squareInt);
             switch (fen[cur])
             {
             case 'K':
                 figures[WHITE][KING].push_back(std::make_unique<King>(WHITE, square));
                 figureFromCoord[WHITE][square] = KING;
-                board_cur++;
                 break;
             case 'k':
                 figures[BLACK][KING].push_back(std::make_unique<King>(BLACK, square));
                 figureFromCoord[BLACK][square] = KING;
-                board_cur++;
                 break;
             case 'Q':
                 figures[WHITE][QUEEN].push_back(std::make_unique<Queen>(WHITE, square));
                 figureFromCoord[WHITE][square] = QUEEN;
-                board_cur++;
                 break;
             case 'q':
                 figures[BLACK][QUEEN].push_back(std::make_unique<Queen>(BLACK, square));
                 figureFromCoord[BLACK][square] = QUEEN;
-                board_cur++;
                 break;
             case 'B':
                 figures[WHITE][BISHOP].push_back(std::make_unique<Bishop>(WHITE, square));
                 figureFromCoord[WHITE][square] = BISHOP;
-                board_cur++;
                 break;
             case 'b':
                 figures[BLACK][BISHOP].push_back(std::make_unique<Bishop>(BLACK, square));
                 figureFromCoord[BLACK][square] = BISHOP;
-                board_cur++;
                 break;
             case 'N':
                 figures[WHITE][KNIGHT].push_back(std::make_unique<Knight>(WHITE, square));
                 figureFromCoord[WHITE][square] = KNIGHT;
-                board_cur++;
                 break;
             case 'n':
                 figures[BLACK][KNIGHT].push_back(std::make_unique<Knight>(BLACK, square));
                 figureFromCoord[BLACK][square] = KNIGHT;
-                board_cur++;
                 break;
             case 'P':
                 figures[WHITE][PAWN].push_back(std::make_unique<Pawn>(WHITE, square));
                 figureFromCoord[WHITE][square] = PAWN;
-                board_cur++;
                 break;
             case 'p':
                 figures[BLACK][PAWN].push_back(std::make_unique<Pawn>(BLACK, square));
                 figureFromCoord[BLACK][square] = PAWN;
-                board_cur++;
                 break;
             case 'R':
                 figures[WHITE][ROOK].push_back(std::make_unique<Rook>(WHITE, square));
                 figureFromCoord[WHITE][square] = ROOK;
-                board_cur++;
                 break;
             case 'r':
                 figures[BLACK][ROOK].push_back(std::make_unique<Rook>(BLACK, square));
                 figureFromCoord[BLACK][square] = ROOK;
-                board_cur++;
-                break;
-            default:
-                board_cur += (fen[cur] - '0');
                 break;
             }
-            cur++;
+            squareInt++;
         }
     }
+
+    // w or b
+    if (++cur < fen.size()) {
+        char nextToMove = fen[cur++];
+    }
+
+    castlingRights.reset();
+    for (cur++; fen[cur] != ' ' && cur < fen.size(); ++cur) {
+        switch (fen[cur]) {
+        case 'K':
+            castlingRights.K = true;
+            break;
+        case 'k':
+            castlingRights.k = true;
+            break;
+        case 'Q':
+            castlingRights.Q = true;
+            break;
+        case 'q':
+            castlingRights.q = true;
+            break;
+        }
+    }
+
 }
 
 char Board::FigureToChar(ESquare square) const
@@ -247,7 +282,7 @@ char Board::FigureToChar(ESquare square) const
         case EFigure::KING: return 'K';
         }
     }
-    
+
     figureInt = figureFromCoord[BLACK][square];
     if (figureInt != NO_FIGURE) {
         switch (figureInt)
@@ -281,18 +316,40 @@ std::string Board::GetFEN() const
                 noFigureCount++;
             }
             else {
-                fen += (noFigureCount > 0) ? std::to_string(noFigureCount) + std::string(1,cur) : std::string(1,cur);
+                fen += (noFigureCount > 0) ? std::to_string(noFigureCount) + std::string(1, cur) : std::string(1, cur);
                 noFigureCount = 0;
             }
         }
         if (noFigureCount > 0) {
             fen += std::to_string(noFigureCount);
         }
-        fen += '/';
+        fen += (rank != 0) ? "/" : " ";
         noFigureCount = 0;
     }
+
+    fen += "w "; //temp
+
+    CastlingRights cr;
+    cr.K = Right00(WHITE, madedMoves);
+    cr.k = Right00(BLACK, madedMoves);
+    cr.Q = Right000(WHITE, madedMoves);
+    cr.q = Right000(BLACK, madedMoves);
+
+    if (cr.K) {
+        fen += 'K';
+    }
+    if (cr.Q) {
+        fen += 'Q';
+    }
+    if (cr.k) {
+        fen += 'k';
+    }
+    if (cr.q) {
+        fen += 'q';
+    }
+
     return fen;
-    
+
 }
 
 std::string Board::GetPGN()
@@ -324,6 +381,13 @@ bool Board::IsKingAttacked(EColor color) const
 
 bool Board::IsShortCastlingPossible(EColor color) const
 {
+    if (color == WHITE && !castlingRights.K) {
+        return false;
+    }
+    else if (color == BLACK && !castlingRights.k) {
+        return false;
+    }
+
     U64 castlingBlockers = (color == WHITE) ?
         bitboards::castling_blockers::SHORT_CASTLING_WHITE :
         bitboards::castling_blockers::SHORT_CASTLING_BLACK;
@@ -337,6 +401,13 @@ bool Board::IsShortCastlingPossible(EColor color) const
 
 bool Board::IsLongCastlingPossible(EColor color) const
 {
+    if (color == WHITE && !castlingRights.Q) {
+        return false;
+    }
+    else if (color == BLACK && !castlingRights.q) {
+        return false;
+    }
+
     U64 castlingBlockers = (color == WHITE) ?
         bitboards::castling_blockers::LONG_CASTLING_WHITE :
         bitboards::castling_blockers::LONG_CASTLING_BLACK;
@@ -528,7 +599,7 @@ bool Board::IsCastlingPossible_(EColor color, const U64& castlingBlockers, ESqua
     }
 
     EColor oppositeColor = (color == WHITE) ? BLACK : WHITE;
-    U64 isBlockersBetweenKingAndRook = (GetSideBoard(color) | GetSideBoard (oppositeColor)) & castlingBlockers;
+    U64 isBlockersBetweenKingAndRook = (GetSideBoard(color) | GetSideBoard(oppositeColor)) & castlingBlockers;
     U64 isCastlingUnderAttack = GetAttackRays(oppositeColor) & castlingBlockers;
 
     return !(isBlockersBetweenKingAndRook || isCastlingUnderAttack);
@@ -590,7 +661,7 @@ void Board::MakePawnTransformMove_(const Move& move)
     case EMoveType::PAWN_TO_QUEEN:
         transformTo = EFigure::QUEEN;
         break;
-    default: 
+    default:
         assert(false);
         break;
     }

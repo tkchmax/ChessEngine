@@ -68,11 +68,23 @@ private:
 
 
 private:
+    struct CastlingRights {
+        void reset() {
+            K = k = Q = q = false;
+        }
+        bool K=true;
+        bool k=true;
+        bool Q=true;
+        bool q=true;
+    };
+
+private:
     Figures figures;
     FigureFromCoord figureFromCoord;
     std::stack<std::unique_ptr<Figure>> captureStack;
     std::stack<std::unique_ptr<Figure>> pawnTransformStack;
     std::list<Move> madedMoves;
+    CastlingRights castlingRights;
     EGamePhase gamePhase;
 };
 
