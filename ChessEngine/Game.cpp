@@ -9,7 +9,7 @@ Game::Game(EPlayer whitePlayerType, EPlayer blackPlayerType)
 #include <iostream>
 void Game::play(int moveLimit)
 {
-    //board->SetFEN("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq");
+    board->SetFEN("r6k/pppbq2p/8/3p1r2/4p3/4Q1R1/PPn3PP/RN4K1 w");
 
     Move move;
     for(int nMove = 0; nMove < moveLimit && !board->IsGameOver(); ++nMove)

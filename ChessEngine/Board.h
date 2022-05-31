@@ -21,6 +21,7 @@ public:
     Board(const Board& other);
 
     const Figures& GetFigures() const { return figures; }
+    FigureFromCoord GetFigureFromCoord() const { return figureFromCoord; }
     FigureIter GetFigureIter(EColor color, EFigure figure, ESquare square);
     FigureIterConst GetFigureIter(EColor color, EFigure figure, ESquare square) const;
     U64 GetSideBoard(EColor color) const;

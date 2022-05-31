@@ -42,3 +42,9 @@ unsigned long misc::BitScanReverse(const U64& mask)
 		throw std::exception("empty mask");
 	return index;
 }
+
+U64 misc::rand64()
+{
+	return rand() ^ (((unsigned __int64)rand() << 15) ^ ((unsigned __int64)rand() << 31) ^
+		((unsigned __int64)rand() << 47) ^ ((unsigned __int64)rand() << 59));
+}

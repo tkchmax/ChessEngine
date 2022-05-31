@@ -26,6 +26,7 @@ namespace misc
     void ShowBits(const U64& bitboard);
     unsigned long BitScanForward(const U64& mask);
     unsigned long BitScanReverse(const U64& mask);
+    U64 rand64();
 }
 
 #endif // !MISC_H_

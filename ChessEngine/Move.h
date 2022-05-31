@@ -25,7 +25,6 @@ public:
     static Move GetBlackShortCastlingMove() { return Move(moves::BLACK_SHORTCASTLING); }
     static Move GetWhiteLongCastlingMove() { return Move(moves::WHITE_LONGCASTLING); }
     static Move GetBlackLongCastlingMove() { return Move(moves::BLACK_LONGCASTLING); }
-    static Move NULL_MOVE() { return Move(0); }
 
     U32 Get() const;
     ESquare GetFrom() const;
@@ -36,10 +35,8 @@ public:
     EColor GetMoveColor() const;
 
     void show() const;
-
 private:
     U32 move;
 };
-
 
 #endif //!MOVE_H_

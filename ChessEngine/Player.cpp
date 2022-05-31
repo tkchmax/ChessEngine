@@ -45,7 +45,7 @@ namespace
 
 Move Bot::ChooseMove()
 {
-    search_struct ss = search::get_best(*board, color, 6);
+    search_struct ss = search::get_best(*board, color, depth);
     Move move = ss.bestMove;
     std::cout << move.GetNotation(board->IsExpandedNotationNeeded(move)) << std::endl;
     return move;
@@ -55,7 +55,7 @@ std::unique_ptr<Player> Player::Create(EPlayer type, std::shared_ptr<Board> boar
 {
     switch (type)
     {
-    case EPlayer::BOT: return std::make_unique<Bot>(board, color, 6);
+    case EPlayer::BOT: return std::make_unique<Bot>(board, color, 7);
     case EPlayer::CONSOLE: return std::make_unique<ConsolePlayer>(board, color);
     }
 }

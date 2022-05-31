@@ -1,5 +1,6 @@
 #include "Evaluate.h"
 #include <bitset>
+#include <iostream>
 
 namespace
 {
@@ -47,8 +48,6 @@ namespace
         }
         return priorities;
     }
-
-
 }
 
 eval_struct evaluate::get_full_eval(const Board& board)
@@ -76,7 +75,7 @@ int evaluate::material_eval(const Board& board, EColor color)
     return (color == WHITE) ? eval : -eval;
 
 }
-#include <iostream>
+
 int evaluate::optimised_diff_eval(const Board& board, EFigure figure)
 {
     static const auto priorities = GeneratePrioritiesArray();

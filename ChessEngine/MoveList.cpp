@@ -30,6 +30,12 @@ void MoveList::replaceToPriorities(std::list<Move>::const_iterator moveIter)
 {
     Move temp = *moveIter;
     moves.erase(moveIter);
+    if (temp.GetMoveType() == EMoveType::CAPTURE) {
+        nCapture--;
+    }
+    else {
+        nSilent--;
+    }
     add(temp, true);
 }
 

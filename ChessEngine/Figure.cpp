@@ -153,8 +153,7 @@ U64 Pawn::GetMoves(const U64& blockers, const U64& opposite) const
 {
     U64 moves = 0;
     bool isOnLastLine = (color == EColor::WHITE) ? square >= ESquare::A8 : square <= ESquare::H1;
-    if (isOnLastLine)
-    {
+    if (isOnLastLine) {
         return 0;
     }
 

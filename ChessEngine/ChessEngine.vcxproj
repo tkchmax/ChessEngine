@@ -156,6 +156,7 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Rays.cpp" />
     <ClCompile Include="Search.cpp" />
+    <ClCompile Include="Transposition.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Board.h" />
@@ -176,6 +177,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="Rays.h" />
     <ClInclude Include="Search.h" />
+    <ClInclude Include="Transposition.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

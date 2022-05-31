@@ -22,6 +22,7 @@ namespace
         }
         return true;
     }
+
     bool Right00(EColor color, const std::list<Move>& madedMoves) {
         ESquare rookSquare = (color == WHITE) ?
             positions_square::WHITE_RSH_ROOK :
@@ -330,10 +331,10 @@ std::string Board::GetFEN() const
     fen += "w "; //temp
 
     CastlingRights cr;
-    cr.K = Right00(WHITE, madedMoves);
-    cr.k = Right00(BLACK, madedMoves);
-    cr.Q = Right000(WHITE, madedMoves);
-    cr.q = Right000(BLACK, madedMoves);
+    cr.K = castlingRights.K && Right00(WHITE, madedMoves);
+    cr.k = castlingRights.k && Right00(BLACK, madedMoves);
+    cr.Q = castlingRights.Q && Right000(WHITE, madedMoves);
+    cr.q = castlingRights.q && Right000(BLACK, madedMoves);
 
     if (cr.K) {
         fen += 'K';
@@ -381,10 +382,8 @@ bool Board::IsKingAttacked(EColor color) const
 
 bool Board::IsShortCastlingPossible(EColor color) const
 {
-    if (color == WHITE && !castlingRights.K) {
-        return false;
-    }
-    else if (color == BLACK && !castlingRights.k) {
+    bool rights = (color == WHITE && castlingRights.K) || (color == BLACK && castlingRights.k);
+    if (!rights) {
         return false;
     }
 
@@ -401,10 +400,8 @@ bool Board::IsShortCastlingPossible(EColor color) const
 
 bool Board::IsLongCastlingPossible(EColor color) const
 {
-    if (color == WHITE && !castlingRights.Q) {
-        return false;
-    }
-    else if (color == BLACK && !castlingRights.q) {
+    bool rights = (color == WHITE && castlingRights.Q) || (color == BLACK && castlingRights.q);
+    if (!rights) {
         return false;
     }
 
