@@ -61,7 +61,7 @@ Board::Board()
 
     for (unsigned colorInt = 0; colorInt < 2; ++colorInt)
     {
-        for (unsigned figureInt = 0; figureInt < EFigure::COUNT; ++figureInt)
+        for (unsigned figureInt = 0; figureInt < 6; ++figureInt)
         {
             const std::list<std::unique_ptr<Figure>>& list = figures[colorInt][figureInt];
             for (auto it = list.begin(); it != list.end(); ++it)
@@ -104,7 +104,7 @@ Board::FigureIterConst Board::GetFigureIter(EColor color, EFigure figure, ESquar
 U64 Board::GetSideBoard(EColor color) const
 {
     U64 sideBoard = 0;
-    for (int figureInt = 0; figureInt < (int)EFigure::COUNT; ++figureInt)
+    for (int figureInt = 0; figureInt < (int)6; ++figureInt)
     {
         const auto& list = figures[color][figureInt];
         for (auto it = list.begin(); it != list.end(); ++it)
@@ -123,25 +123,10 @@ unsigned int Board::GetFigureCount(EColor color, EFigure figureName) const
 unsigned int Board::GetSideFiguresCount(EColor color) const
 {
     int count = 0;
-    for (int figureInt = 0; figureInt < EFigure::COUNT; ++figureInt) {
+    for (int figureInt = 0; figureInt < 6; ++figureInt) {
         count += GetFigureCount(color, static_cast<EFigure>(figureInt));
     }
     return count;
-}
-
-unsigned int Board::GetFigureSumMobility(EColor color, EFigure figureName) const
-{
-    EColor oppositeColor = (color == WHITE) ? BLACK : WHITE;
-    std::uint64_t blockers = GetSideBoard(color);
-    std::uint64_t opposite = GetSideBoard(oppositeColor);
-
-    int mobility = 0;
-    for (auto it = figures[color][figureName].begin(); it != figures[color][figureName].end(); ++it)
-    {
-        std::uint64_t silentMoves = (*it)->GetSilentMoves(blockers, opposite);
-        mobility += std::bitset<64>(silentMoves).count();
-    }
-    return mobility;
 }
 
 U64 Board::GetAttackRays(EColor color) const
@@ -150,7 +135,7 @@ U64 Board::GetAttackRays(EColor color) const
     U64 opposite = GetSideBoard((color == WHITE) ? BLACK : WHITE);
 
     U64 attackRays = 0;
-    for (unsigned figureInt = 0; figureInt < EFigure::COUNT; ++figureInt) {
+    for (unsigned figureInt = 0; figureInt < 6; ++figureInt) {
         const auto& list = figures[color][figureInt];
         for (const auto& figure : list) {
             attackRays |= figure->GetMoves(blockers, opposite) & ~blockers;
@@ -350,7 +335,6 @@ std::string Board::GetFEN() const
     }
 
     return fen;
-
 }
 
 std::string Board::GetPGN()
@@ -375,6 +359,7 @@ bool Board::IsKingAttacked(EColor color) const
     auto kingIter = figures[color][KING].begin();
 
     if (kingIter == figures[color][KING].end()) {
+        std::cout << "!!!!\n";
         return true;
     }
     return TO_BITBOARD((*kingIter)->GetSquare()) & attackRays;
@@ -435,6 +420,7 @@ MoveList Board::GenerateMoveList_(U64 bitboard, EFigure figureName, ESquare from
     MoveList moveList;
     EColor oppositeColor = (color == WHITE) ? BLACK : WHITE;
     U64 pawnTransformLine = (color == WHITE) ? ~bitboards::NOT_8_RANK : ~bitboards::NOT_1_RANK;
+
     while (bitboard) {
         int toSquare = misc::BitScanForward(bitboard);
         int captureInt = figureFromCoord[oppositeColor][toSquare];
@@ -467,9 +453,11 @@ MoveList Board::GenerateMoveList_(const std::unique_ptr<Figure>& figure, bool is
     U64 opposite = GetSideBoard(oppositeColor);
     U64 movesBoard = figure->GetMoves(blockers, opposite);
 
+    //Generate capture moves
     U64 movesBoardCaptures = movesBoard & opposite;
     moveList += GenerateMoveList_(movesBoardCaptures, figureName, fromSquare, color);
 
+    //Generate quiet moves
     if (!isCaptureOnly) {
         U64 movesBoardSilents = movesBoard & ~opposite & ~blockers;
         moveList += GenerateMoveList_(movesBoardSilents, figureName, fromSquare, color);
@@ -490,7 +478,7 @@ MoveList Board::GenerateMoveList(EColor color, bool isCaptureOnly) const
         }
     }
 
-    for (unsigned figureInt = 0; figureInt < EFigure::COUNT; ++figureInt) {
+    for (unsigned figureInt = 0; figureInt < 6; ++figureInt) {
         const auto& list = figures[color][figureInt];
         for (auto figureIter = list.begin(); figureIter != list.end(); ++figureIter) {
             moveList += GenerateMoveList_(*figureIter, isCaptureOnly);
@@ -608,8 +596,11 @@ bool Board::IsExpandedNotationNeeded(const Move& move)
 
     for (auto moveIter = moveList.Get().begin(); moveIter != moveList.Get().end(); moveIter++) {
         const Move& m = *moveIter;
-        bool isAnotherFigureGoesOnSameSquare = m.GetFigure() == move.GetFigure() &&
-            m.GetTo() == move.GetTo() && m.GetFrom() != move.GetFrom();
+        bool isAnotherFigureGoesOnSameSquare =
+            m.GetFigure() == move.GetFigure() &&
+            m.GetTo() == move.GetTo() &&
+            m.GetFrom() != move.GetFrom();
+
         if (isAnotherFigureGoesOnSameSquare) {
             return true;
         }

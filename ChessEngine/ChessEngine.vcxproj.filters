@@ -41,9 +41,6 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Constants.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Misc.cpp">
       <Filter>Source Files\Utils</Filter>
     </ClCompile>

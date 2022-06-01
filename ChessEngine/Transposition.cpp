@@ -64,6 +64,7 @@ void TranspositionTable::amend_hash(const Move& move)
     ESquare from = move.GetFrom();
     ESquare to = move.GetTo();
 
+    //delete capture figure position
     if (capture != EFigure::NO_FIGURE) {
         currentHash ^= zobristKeys[(color == WHITE) ? BLACK : WHITE][capture][to];
     }

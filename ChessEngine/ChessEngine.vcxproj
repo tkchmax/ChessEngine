@@ -141,7 +141,6 @@
   <ItemGroup>
     <ClCompile Include="Board.cpp" />
     <ClCompile Include="CLI.cpp" />
-    <ClCompile Include="Constants.cpp" />
     <ClCompile Include="EColor.cpp" />
     <ClCompile Include="EFigure.cpp" />
     <ClCompile Include="EMoveType.cpp" />

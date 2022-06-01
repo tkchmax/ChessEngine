@@ -112,7 +112,8 @@ namespace search
         }
         
         int score = alpha_beta(depth, -INF, INF, color, board);
-        //std::cout << "N: " << n << std::endl;
+        std::cout << "N: " << n << std::endl;
+        std::cout << "t_size: " << transpositionTable->get_size() << std::endl;
         return { bestMoves.back() };
     }
 }

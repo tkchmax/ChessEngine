@@ -41,7 +41,7 @@ namespace
         }
         return knightMoves;
     }
-    std::array<U64, 64> GenerateKingMoveRays()
+    std::array<U64, 64> GenerateKingMoves()
     {
         using namespace bitboards;
 
@@ -287,7 +287,7 @@ U64 Queen::GetMoves(const U64& blockers, const U64& opposite) const
 
 U64 King::GetMoves(const U64& blockers, const U64& opposite) const
 {
-    static const std::array<U64, 64> moves = GenerateKingMoveRays();
+    static const std::array<U64, 64> moves = GenerateKingMoves();
     return moves[(int)square];
 }
 

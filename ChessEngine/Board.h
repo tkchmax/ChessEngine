@@ -67,7 +67,6 @@ private:
     void MoveFigure_(EFigure figureName, EColor color, ESquare from, ESquare to);
     void MoveBackFigure_(EFigure figureName, EColor color, ESquare from, ESquare to);
 
-
 private:
     struct CastlingRights {
         void reset() {

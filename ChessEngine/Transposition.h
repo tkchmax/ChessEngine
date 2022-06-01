@@ -6,9 +6,9 @@ struct transposition_struct
     transposition_struct() : best_move(Move(0)), alpha(0) {}
     transposition_struct(Move m, int alpha) : best_move(m), alpha(alpha) {}
     bool empty() { return best_move.Get() == 0; }
+
     Move best_move;
     int alpha;
-    //beta
 };
 
 class TranspositionTable

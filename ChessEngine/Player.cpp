@@ -4,50 +4,13 @@
 #include <iostream>
 #include <algorithm>
 
-namespace
-{
-    std::array<int, 64> GetPriority(EFigure figure, EColor color, EGamePhase gamePhase)
-    {
-        switch (figure)
-        {
-        case EFigure::KNIGHT: return figure_priority_squares::KNIGHT;
-        case EFigure::BISHOP: return figure_priority_squares::BISHOP;
-        case EFigure::ROOK: return figure_priority_squares::ROOK;
-        case EFigure::QUEEN: return figure_priority_squares::QUEEN;
-
-        case EFigure::PAWN: return (color == WHITE) ? figure_priority_squares::WHITE_PAWN : figure_priority_squares::BLACK_PAWN;
-        case EFigure::KING:
-        {
-            if (gamePhase == EGamePhase::END_GAME) {
-                return figure_priority_squares::KING_ENDGAME;
-            }
-            else {
-                return (color == WHITE) ? figure_priority_squares::WHITE_KING_MIDDLEGAME : figure_priority_squares::BLACK_KING_MIDDLEGAME;
-            }
-        }
-        }
-    }
-
-    std::array<std::array<std::array<std::array<int, 64>, 3>, 6>, 2> GeneratePrioritiesArray()
-    {
-        std::array<std::array<std::array<std::array<int, 64>, 3>, 6>, 2> priorities{};
-        for (unsigned colorInt = 0; colorInt < 2; ++colorInt) {
-            for (unsigned figureInt = 0; figureInt < 6; ++figureInt) {
-                for (unsigned gamePhaseInt = 0; gamePhaseInt < 3; ++gamePhaseInt) {
-                    priorities[colorInt][figureInt][gamePhaseInt] = GetPriority(static_cast<EFigure>(figureInt),
-                        static_cast<EColor>(colorInt), static_cast<EGamePhase>(gamePhaseInt));
-                }
-            }
-        }
-        return priorities;
-    }
-}
-
 Move Bot::ChooseMove()
 {
     search_struct ss = search::get_best(*board, color, depth);
     Move move = ss.bestMove;
-    std::cout << move.GetNotation(board->IsExpandedNotationNeeded(move)) << std::endl;
+
+    bool expNotation = board->IsExpandedNotationNeeded(move);
+    std::cout << move.GetNotation(expNotation) << std::endl;
     return move;
 }
 
@@ -55,7 +18,7 @@ std::unique_ptr<Player> Player::Create(EPlayer type, std::shared_ptr<Board> boar
 {
     switch (type)
     {
-    case EPlayer::BOT: return std::make_unique<Bot>(board, color, 7);
+    case EPlayer::BOT: return std::make_unique<Bot>(board, color, 6);
     case EPlayer::CONSOLE: return std::make_unique<ConsolePlayer>(board, color);
     }
 }
@@ -64,7 +27,6 @@ Move ConsolePlayer::ChooseMove()
 {
     MoveList availibleMoves = board->GenerateMoveList(color);
     std::string raw_move;
-
 
     while (true)
     {

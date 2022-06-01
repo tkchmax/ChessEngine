@@ -23,32 +23,29 @@ public:
     EFigure GetFigureName() { return figureName; }
     ESquare GetSquare() { return square; }
     int GetMovesCount() { return squaresCache.size(); }
-    int GetCost() { return cost; }
 
     void move(ESquare newSquare);
     void moveBack();
 
 protected:
-    Figure(EColor color, EFigure figureName, ESquare square, int cost) : 
+    Figure(EColor color, EFigure figureName, ESquare square) : 
         color(color),
         figureName(figureName),
-        square(square),
-        cost(cost)
+        square(square)
     {}
 
 protected:
     EColor color;
     EFigure figureName;
     ESquare square;
-    int cost;
     std::stack<ESquare> squaresCache;
 };
 
 class Pawn : public Figure
 {
 public:
-    Pawn(EColor color, ESquare square, int cost = cost_default::PAWN) :
-        Figure(color, EFigure::PAWN, square, cost), whitePawn(bitboards::startpos::WHITE_PAWN_START_POSITION_BITBOARD, bitboards::NOT_A_FILE, bitboards::NOT_H_FILE, NORTH, 8,7,9),
+    Pawn(EColor color, ESquare square) :
+        Figure(color, EFigure::PAWN, square), whitePawn(bitboards::startpos::WHITE_PAWN_START_POSITION_BITBOARD, bitboards::NOT_A_FILE, bitboards::NOT_H_FILE, NORTH, 8,7,9),
         blackPawn(bitboards::startpos::BLACK_PAWN_START_POSITION_BITBOARD, bitboards::NOT_H_FILE, bitboards::NOT_A_FILE, SOUTH, -8, -7, -9) {}
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 
@@ -78,40 +75,40 @@ private:
 class Knight : public Figure
 {
 public:
-    Knight(EColor color, ESquare square, int cost = cost_default::KNIGHT) :
-        Figure(color, EFigure::KNIGHT, square, cost) {}
+    Knight(EColor color, ESquare square) :
+        Figure(color, EFigure::KNIGHT, square) {}
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 };
 
 class Bishop : public Figure
 {
 public:
-    Bishop(EColor color, ESquare square, int cost=cost_default::BISHOP) : 
-        Figure(color, EFigure::BISHOP, square, cost) {}
+    Bishop(EColor color, ESquare square) : 
+        Figure(color, EFigure::BISHOP, square) {}
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 };
 
 class Rook : public Figure
 {
 public:
-    Rook(EColor color, ESquare square, int cost = cost_default::ROOK) :
-        Figure(color, EFigure::ROOK, square, cost) {}
+    Rook(EColor color, ESquare square) :
+        Figure(color, EFigure::ROOK, square) {}
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 };
 
 class Queen : public Figure
 {
 public:
-    Queen(EColor color, ESquare square, int cost = cost_default::QUEEN) :
-        Figure(color, EFigure::QUEEN, square, cost) {}
+    Queen(EColor color, ESquare square) :
+        Figure(color, EFigure::QUEEN, square) {}
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 };
 
 class King : public Figure
 {
 public:
-    King(EColor color, ESquare square, int cost = cost_default::KING) :
-        Figure(color, EFigure::KING, square, cost) {}
+    King(EColor color, ESquare square) :
+        Figure(color, EFigure::KING, square) {}
     virtual U64 GetMoves(const U64& blockers, const U64& opposite) const override;
 };
 
