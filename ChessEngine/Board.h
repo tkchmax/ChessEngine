@@ -22,6 +22,8 @@ public:
 
     const Figures& GetFigures() const { return figures; }
     FigureFromCoord GetFigureFromCoord() const { return figureFromCoord; }
+    std::list<Move> GetMadedMoves() const { return madedMoves; }
+
     FigureIter GetFigureIter(EColor color, EFigure figure, ESquare square);
     FigureIterConst GetFigureIter(EColor color, EFigure figure, ESquare square) const;
     U64 GetSideBoard(EColor color) const;

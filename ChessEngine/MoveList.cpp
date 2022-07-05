@@ -28,8 +28,22 @@ void MoveList::operator+=(const MoveList& other)
 
 void MoveList::replaceToPriorities(std::list<Move>::const_iterator moveIter)
 {
+    if (moveIter == moves.begin()) {
+        return;
+    }
+
     Move temp = *moveIter;
     moves.erase(moveIter);
+
+    for (auto it = moves.begin(); it != std::next(moves.begin(), nPriority); ++it) {
+        if (*it == temp) {
+            std::cout << "ret\n";
+            nPriority--;
+            add(temp, true);
+            return;
+        }
+    }
+
     if (temp.GetMoveType() == EMoveType::CAPTURE) {
         nCapture--;
     }

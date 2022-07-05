@@ -359,7 +359,7 @@ bool Board::IsKingAttacked(EColor color) const
     auto kingIter = figures[color][KING].begin();
 
     if (kingIter == figures[color][KING].end()) {
-        std::cout << "!!!!\n";
+        //std::cout << "!!!!\n";
         return true;
     }
     return TO_BITBOARD((*kingIter)->GetSquare()) & attackRays;
@@ -495,6 +495,9 @@ void Board::makeMove(const Move& move)
 
     if (move.GetCapture() != EFigure::NO_FIGURE) {
         RemoveCapture_(move);
+        if (GetSideFiguresCount(WHITE) + GetSideFiguresCount(BLACK) < 16) {
+            gamePhase = EGamePhase::END_GAME;
+        }
     }
 
     if (IsPawnTransformType(move.GetMoveType())) {
@@ -522,6 +525,9 @@ void Board::undoMove()
 
     if (lastMove.GetCapture() != EFigure::NO_FIGURE) {
         RestoreCapture_();
+        if (GetSideFiguresCount(WHITE) + GetSideFiguresCount(BLACK) >= 16) {
+            gamePhase = EGamePhase::MIDDLE_GAME;
+        }
     }
 
     if (IsPawnTransformType(lastMove.GetMoveType())) {

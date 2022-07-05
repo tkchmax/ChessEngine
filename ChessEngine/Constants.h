@@ -10,7 +10,7 @@
 using U64 = uint64_t;
 using U32 = uint32_t;
 
-#define INF 0x7FFFFFFF
+//#define INF 0x7FFFFFFA
 
 namespace bitboards
 {
@@ -86,7 +86,7 @@ namespace cost_default
     constexpr int BISHOP = 301;
     constexpr int ROOK = 500;
     constexpr int QUEEN = 1000;
-    constexpr int KING = INF;
+    constexpr int KING = 10000;
 }
 
 namespace figure_priority_squares
@@ -172,6 +172,8 @@ namespace figure_priority_squares
 									   0, 3,  3,  3,  3,  3, 3, 0,
 									   0, 0, 0,  0,  0, 0, 0, 0 };
 }
+
+#define INF cost_default::KING * 10
 
 #endif // !CONSTANTS_H_
 

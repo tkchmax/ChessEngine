@@ -6,11 +6,12 @@
 
 Move Bot::ChooseMove()
 {
-    search_struct ss = search::get_best(*board, color, depth);
-    Move move = ss.bestMove;
+    //search_struct ss = search::get_best(*board, color, 6);
+    auto ss = search::iterative_deepening(*board, color, 0);
+    Move move = ss.pv[0];
 
     bool expNotation = board->IsExpandedNotationNeeded(move);
-    std::cout << move.GetNotation(expNotation) << std::endl;
+    std::cout <<"*"<< move.GetNotation(expNotation) << std::endl;
     return move;
 }
 
@@ -18,7 +19,7 @@ std::unique_ptr<Player> Player::Create(EPlayer type, std::shared_ptr<Board> boar
 {
     switch (type)
     {
-    case EPlayer::BOT: return std::make_unique<Bot>(board, color, 6);
+    case EPlayer::BOT: return std::make_unique<Bot>(board, color, 7);
     case EPlayer::CONSOLE: return std::make_unique<ConsolePlayer>(board, color);
     }
 }
@@ -52,7 +53,7 @@ std::string ConsolePlayer::GetAvailibleMoves()
     MoveList moveList = board->GenerateMoveList(color);
     std::string availible_moves = "";
 
-    for (int figureInt = 0; figureInt <= EFigure::COUNT; ++figureInt)
+    for (int figureInt = 0; figureInt <= 6; ++figureInt)
     {
         std::list<Move> figure_list;
         std::copy_if(moveList.Get().begin(), moveList.Get().end(), std::back_inserter(figure_list),

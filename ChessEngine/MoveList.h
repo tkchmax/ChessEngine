@@ -13,7 +13,8 @@ public:
     void add(const Move& move, bool isPriorityMove=false);
     void operator+=(const MoveList& other);
 
-    const std::list<Move>& Get() { return moves; }
+    std::list<Move>& Get() { return moves; }
+    int GetPrioritiesSize() { return nPriority; }
     void replaceToPriorities(std::list<Move>::const_iterator moveIter);
     void mvv_lva();
 

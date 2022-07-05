@@ -4,7 +4,7 @@
 
 namespace
 {
-    constexpr std::array<int, EFigure::COUNT> figure_costs = {
+    constexpr std::array<int, 6> figure_costs = {
         cost_default::PAWN,
         cost_default::KNIGHT,
         cost_default::BISHOP,
@@ -58,7 +58,7 @@ eval_struct evaluate::get_full_eval(const Board& board)
 int evaluate::get_eval(const Board& board, EColor color)
 {
     int eval = 0;
-    for (int figureInt = 0; figureInt < EFigure::COUNT; ++figureInt) {
+    for (int figureInt = 0; figureInt < 6; ++figureInt) {
         EFigure figure = static_cast<EFigure>(figureInt);
         eval += get_diff_figure_material(board, figure) + optimised_diff_eval(board, figure);
     }

@@ -2,6 +2,8 @@
 #include <iostream>
 #include <cstdlib>
 #include <cassert>
+#include <algorithm>
+#include <set>
 
 namespace {
     TranspositionTable::ZobristKeys init_zobrist() {
@@ -13,6 +15,21 @@ namespace {
                 }
             }
         }
+        std::vector<U64> t;
+        for (int i = 0; i < 2; ++i) {
+            for (int j = 0; j < 6; ++j) {
+                for (int k = 0; k < 64; ++k) {
+                    t.push_back(keys[i][j][k]);
+                }
+            }
+        }
+
+        std::set<U64> set(t.begin(), t.end());
+
+        if (t.size() != set.size()) {
+            std::cout << "not unqiue zobrist keys\n";
+        }
+
         return keys;
     }
 }
@@ -45,15 +62,29 @@ void TranspositionTable::add(transposition_struct new_position)
 {
     int id = currentHash & capacity;
     assert(id < capacity);
+
     if (table[id].empty()) {
+        table[id] = new_position;
         size += 1;
     }
-    table[id] = new_position;
+    else if (new_position.depth >= table[id].depth && new_position.zobristHash == table[id].zobristHash) {
+        table[id] = new_position;
+    }
 }
+
+void TranspositionTable::add(const std::vector<Move>& pv, EFlag flag, unsigned int depth, int score)
+{
+    add(transposition_struct(currentHash, flag, depth, score, pv));
+}
+
 
 transposition_struct TranspositionTable::get()
 {
-    return table[currentHash & capacity];
+    auto ss = table[currentHash & capacity];
+    if (!ss.empty() && ss.zobristHash == currentHash) {
+        return ss;
+    }
+    return transposition_struct();
 }
 
 void TranspositionTable::amend_hash(const Move& move)
@@ -75,6 +106,35 @@ void TranspositionTable::amend_hash(const Move& move)
     //set final position
     currentHash ^= zobristKeys[color][figure][to];
 
+    using namespace positions_square;
+    switch (move.GetMoveType()) {
+    case EMoveType::SHORT_CASTLING:
+        currentHash ^= zobristKeys[color][ROOK][(color == WHITE) ? WHITE_RSH_ROOK : BLACK_RSH_ROOK];
+        currentHash ^= zobristKeys[color][ROOK][(color == WHITE) ? WHITE_RSH_ROOK_CASTLED : BLACK_RSH_ROOK_CASTLED];
+        break;
+    case EMoveType::LONG_CASTLING:
+        currentHash ^= zobristKeys[color][ROOK][(color == WHITE) ? WHITE_LSH_ROOK : BLACK_LSH_ROOK];
+        currentHash ^= zobristKeys[color][ROOK][(color == WHITE) ? WHITE_LSH_ROOK_CASTLED : BLACK_LSH_ROOK_CASTLED];
+        break;
+    case EMoveType::PAWN_TO_KNIGHT:
+        assert(figure == PAWN);
+        currentHash ^= zobristKeys[color][PAWN][to];
+        currentHash ^= zobristKeys[color][KNIGHT][to];
+        break;
+    case EMoveType::PAWN_TO_BISHOP:
+        currentHash ^= zobristKeys[color][PAWN][to];
+        currentHash ^= zobristKeys[color][BISHOP][to];
+        break;
+    case EMoveType::PAWN_TO_ROOK:
+        currentHash ^= zobristKeys[color][PAWN][to];
+        currentHash ^= zobristKeys[color][ROOK][to];
+        break;
+    case EMoveType::PAWN_TO_QUEEN:
+        assert(figure == PAWN);
+        currentHash ^= zobristKeys[color][PAWN][to];
+        currentHash ^= zobristKeys[color][QUEEN][to];
+        break;
+    }
 }
 
 void TranspositionTable::reset_current_hash(const Board& board)

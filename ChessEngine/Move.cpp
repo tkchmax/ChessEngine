@@ -13,6 +13,7 @@ namespace
         case ROOK: return "R";
         case QUEEN: return "Q";
         case KING: return "K";
+        default: return "ERR_SYMBOL";
         }
     }
 }

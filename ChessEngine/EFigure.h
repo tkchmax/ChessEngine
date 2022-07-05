@@ -7,8 +7,7 @@ enum EFigure
     ROOK,
     QUEEN,
     KING,
-    NO_FIGURE,
-    COUNT = 6
+    NO_FIGURE
 };
 
 const char* ToString(EFigure figureName);
