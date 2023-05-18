@@ -2,9 +2,10 @@
 #include "Misc.h"
 #include "Magic.h"
 #include "Rays.h"
+#include "Transposition.h"
 #include <stdexcept>
 #include <cassert>
-#include "Transposition.h"
+#include <iomanip>
 
 
 namespace {
@@ -20,6 +21,16 @@ namespace {
         {0,500,1500,2500,3500,4500,5500},
     };
 
+    //constexpr int MVV_LVA_BONUS[7][7] = {
+    //{0,0,0,0,0,0,0},
+    //{0,0,0,0,0,0,0},
+    //{0,0,0,0,0,0,0},
+    //{0,0,0,0,0,0,0},
+    //{0,0,0,0,0,0,0},
+    //{0,0,0,0,0,0,0},
+    //{0,0,0,0,0,0,0},
+    //};
+
     template<EColor color>
     U64 GetPawnAttackBB(U64 pawnsBB) {
         return color == WHITE ?
@@ -29,9 +40,9 @@ namespace {
 
     template<EGenType gentype, EDir dir>
     void MakePromotions(MoveList& list, ESquare to) {
-            const ESquare from = ESquare(to - misc::shift_value<dir>());
-            list.add(EncodeMove<PROMOTION>(from, to, KNIGHT));
-            list.add(EncodeMove<PROMOTION>(from, to, QUEEN));
+        const ESquare from = ESquare(to - misc::shift_value<dir>());
+        list.add(EncodeMove<PROMOTION>(from, to, KNIGHT));
+        list.add(EncodeMove<PROMOTION>(from, to, QUEEN));
     }
 
     template<EColor color, EGenType gentype>
@@ -74,11 +85,12 @@ namespace {
             constexpr U64 epLine = (color == WHITE) ? bitboards::RANK_5 : bitboards::RANK_4;
             if (pos.get_en_passant() != SQ_NONE) {
                 const U64 epBB = TO_BITBOARD(pos.get_en_passant());
-                U64 epCandidates = 
+                U64 epCandidates =
                     pawns_bb & (shift_bb<EAST>(epBB) | shift_bb<WEST>(epBB));
 
+                ESquare to = ESquare(lsb(shift_bb<up>(epBB)));
                 while (epCandidates) {
-                    ESquare from = ESquare(pop_lsb(epCandidates));
+                    ESquare from = pop_lsb(epCandidates);
                     list.add(EncodeMove<EN_PASSANT>(from, ESquare(lsb(shift_bb<up>(epBB))), PAWN), MVV_LVA_BONUS[PAWN][PAWN]);
                 }
             }
@@ -166,9 +178,24 @@ namespace {
         if constexpr (gentype != CAPTURES) {
             for (CastlingRights cr : castling::byColor[color]) {
                 bool rookExist = TO_BITBOARD(castling::rookSquare[cr]) & pos.figures(color, ROOK);
-                if (!pos.is_castling_impeded(cr) && pos.can_castling(cr) && rookExist) {
-                    ESquare ksq = ESquare(misc::lsb(pos.figures(color, KING)));
-                    list.add(EncodeMove<CASTLING>(ksq, castling::rookSquare[cr], KING));
+                if (pos.can_castling(cr) && !pos.is_castling_impeded(cr) && rookExist) {
+                    ESquare ksq = color == WHITE ? E1 : E8;
+                    //ESquare kSafetySq = cr == WHITE_00 ? F1 
+                        //cr == WHITE_000 ? D1 : BLACK_;
+                    
+                    if (!(pos.attack_to(ksq) & pos.figures(opColor))) {
+                        if (!(pos.attack_to(castling::kingSafetySq[cr]) & pos.figures(opColor))) {
+                            list.add(EncodeMove<CASTLING>(ksq, castling::rookSquare[cr], KING));
+                        }
+                    }
+
+                    //if (!pos.is_king_attacked(color)) {
+                            //ESquare ksq = ESquare(misc::lsb(pos.figures(color, KING)));
+                            
+                            //list.add(EncodeMove<CASTLING>(color == WHITE ? E1 : E8, castling::rookSquare[cr], KING));
+                        //ESquare ksq = ESquare(misc::lsb(pos.figures(color, KING)));
+                        //list.add(EncodeMove<CASTLING>(ksq, castling::rookSquare[cr], KING));
+                    //}
                 }
             }
         }
@@ -180,26 +207,26 @@ Position::Position(std::string fen)
     this->setFEN(fen);
 }
 
-EGamePhase Position::calculate_game_phase() const
+EGamePhase Position::calculate_phase() const
 {
-    using namespace evaluate;
-    int gamePhaseScore = 0;
-    for (int f = KNIGHT; f <= QUEEN; ++f) {
-        gamePhaseScore +=
-            misc::countBits(figures(WHITE, EFigureType(f))) * material_score[OPENNING][add_color(WHITE, EFigureType(f))]
-            - misc::countBits(figures(BLACK, EFigureType(f))) * material_score[OPENNING][add_color(BLACK, EFigureType(f))];
-    }
+    int gamePhaseScore = calculate_phase_score();
 
     EGamePhase gp =
-        gamePhaseScore > opening_bounder_score ? EGamePhase::OPENNING :
-        gamePhaseScore < endgame_bounder_score ? EGamePhase::END_GAME :
+        gamePhaseScore > evaluate::opening_bounder_score ? EGamePhase::OPENNING :
+        gamePhaseScore < evaluate::endgame_bounder_score ? EGamePhase::END_GAME :
         EGamePhase::MIDDLE_GAME;
 
     return gp;
 }
 
+int Position::phase_score() const
+{
+    return gpScore;
+}
+
 void Position::setFEN(const std::string& fen)
 {
+    attackedSquares = 0;
     enPassant = ESquare::SQ_NONE;
 
     //Clear representation of the board
@@ -323,7 +350,8 @@ void Position::setFEN(const std::string& fen)
         std::cout << "";
     }
 
-    gp = calculate_game_phase();
+    gp = calculate_phase();
+    gpScore = calculate_phase_score();
 
     zobrist = Transposition::GetZobristHash(*this);
 }
@@ -344,6 +372,20 @@ std::ostream& operator<<(std::ostream& out, const Position& pos)
         }
     }
     out << "  a   b   c   d   e   f   g   h\n";
+
+    out << std::endl;
+
+    out << std::setw(15) << "Side: " << std::setw(5) << misc::ToString(pos.side_to_move()) << std::endl;
+    out << std::setw(15) << "Enpassant: " << std::setw(5) << misc::ToString(pos.get_en_passant()) << std::endl;
+
+    std::string castling(4, ' ');
+    int cr = pos.get_castling_rights();
+    castling[0] = (cr & WHITE_00)  ? 'K' : '-';
+    castling[1] = (cr & WHITE_000) ? 'Q' : '-';
+    castling[2] = (cr & BLACK_00)  ? 'k' : '-';
+    castling[3] = (cr & BLACK_000) ? 'q' : '-';
+
+    out << std::setw(15) << "Castling: " << std::setw(5) << castling << std::endl << std::endl;
     return out;
 }
 
@@ -352,8 +394,10 @@ U64 Position::attack_to(ESquare square) const {
         (GetPawnAttackBB<WHITE>(TO_BITBOARD(square)) & figures(BLACK, PAWN)) |
         (GetPawnAttackBB<BLACK>(TO_BITBOARD(square)) & figures(WHITE, PAWN)) |
         (GetAttackBB<KNIGHT>(square) & byTypeBB[KNIGHT]) |
-        (GetAttackBB<BISHOP>(square, byTypeBB[ALL_FIGURE_TYPE] ^ figures(sideToMove, KING)) & (byTypeBB[BISHOP] | byTypeBB[QUEEN])) |
-        (GetAttackBB<ROOK>(square, byTypeBB[ALL_FIGURE_TYPE] ^ figures(sideToMove, KING)) & (byTypeBB[ROOK] | byTypeBB[QUEEN])) |
+        //(GetAttackBB<BISHOP>(square, byTypeBB[ALL_FIGURE_TYPE] ^ figures(sideToMove, KING)) & (byTypeBB[BISHOP] | byTypeBB[QUEEN])) |
+        (GetAttackBB<BISHOP>(square, byTypeBB[ALL_FIGURE_TYPE]) & (byTypeBB[BISHOP] | byTypeBB[QUEEN])) |
+        //(GetAttackBB<ROOK>(square, byTypeBB[ALL_FIGURE_TYPE] ^ figures(sideToMove, KING)) & (byTypeBB[ROOK] | byTypeBB[QUEEN])) |
+        (GetAttackBB<ROOK>(square, byTypeBB[ALL_FIGURE_TYPE]) & (byTypeBB[ROOK] | byTypeBB[QUEEN])) |
         (GetAttackBB<KING>(square) & byTypeBB[KING]);
 }
 
@@ -374,12 +418,6 @@ bool Position::is_move_legal(Move move) const
     }
     //if king move, check if destination sqaure is not under attack
     else if (READ_FIGURE(move) == KING) {
-        //if (board[A4] == W_QUEEN && board[D7] == B_KING && move == 28467) {
-        //    misc::ShowBits(attack_to(ESquare(to)));
-        //    misc::ShowBits(byColorBB[~sideToMove]);
-        //    misc::ShowBits(figures(WHITE,QUEEN));
-        //    misc::ShowBits(byTypeBB[QUEEN]);
-        //}
         bool b = !(attack_to(ESquare(to)) & byColorBB[~sideToMove]);
         return !(attack_to(ESquare(to)) & byColorBB[~sideToMove]);
     }
@@ -412,8 +450,20 @@ Position Position::make_move(Move m) const
         newPos.move_figure(from, to);
     }
 
+    int gphase = newPos.gpScore;
     if (capture != NO_FIGURE) {
         newPos.remove_figure(to);
+
+        //Update game-phase if needed
+        if (type_of(capture) >= KNIGHT && type_of(capture) <= QUEEN) {
+            int updVal = evaluate::material_score[OPENNING][capture];
+
+            newPos.gpScore += color == WHITE ? updVal : -updVal;
+
+            if (newPos.calculate_phase_score() != newPos.gpScore) {
+                std::cout << "";
+            }
+        }
     }
 
     if (move_type == NORMAL) {
@@ -425,26 +475,38 @@ Position Position::make_move(Move m) const
         }
 
         if (fig == ROOK) {
-            //newPos.castling_rights &=
-            //    from == castling::rookFromTo00[color][0] ?
-            //    ~(1 << (color * 2)) :
-            //    ~(2 << (color * 2)); 
-            newPos.castlingRights &=
-                from == castling::rookFromTo00[color][0] ?
-                color == WHITE ? ~WHITE_00 : ~BLACK_00 :
-                color == WHITE ? ~WHITE_000 : ~BLACK_000;
+            if (from == castling::rookFromTo00[color][0]) {
+                newPos.castlingRights &= color == WHITE ? ~WHITE_00 : ~BLACK_00;
+            }
+            else if (from == castling::rookFromTo000[color][0]) {
+                newPos.castlingRights &= color == WHITE ? ~WHITE_000 : ~BLACK_000;
+            }
         }
     }
     else if (move_type == PROMOTION) {
         newPos.remove_figure(from);
         newPos.create_figure(to, add_color(color, fig));
+        //Upd game phase score
+        newPos.gpScore += evaluate::material_score[OPENNING][fig];
     }
     else if (move_type == EN_PASSANT) {
         newPos.remove_figure(ESquare(color == WHITE ? to - 8 : to + 8));
         newPos.move_figure(from, to);
     }
 
+    if (newPos.calculate_phase_score() != newPos.gpScore) {
+        std::cout << "";
+        throw;
+    }
+
+    //Set new game phase
+    newPos.gp = 
+        newPos.gpScore > evaluate::opening_bounder_score ? EGamePhase::OPENNING :
+        newPos.gpScore < evaluate::endgame_bounder_score ? EGamePhase::END_GAME :
+        EGamePhase::MIDDLE_GAME;
+
     Transposition::AmmendHash(newPos.zobrist, m, *this);
+
     return newPos;
 }
 
@@ -491,7 +553,21 @@ void Position::generate<LEGAL>(MoveList& legalMoves) const {
     }
 }
 
-template void Position::generate<LEGAL>(MoveList&) const;
+Position Position::make_move(std::string algNotation) const
+{   
+    MoveList list;
+    generate<LEGAL>(list);
+
+    for (int i = 0; i < list.size(); ++i) {
+        if (algNotation == misc::ToString(list[i])) {
+            return make_move(list[i]);
+        }
+    }
+
+    std::cout << "move " << algNotation << " not found\n";
+    throw std::invalid_argument("There is no [" + algNotation + "] move in current position");
+}
+
 template void Position::generate<PSEUDO>(MoveList&) const;
 template void Position::generate<CAPTURES>(MoveList&) const;
 template void Position::generate<QUIETS>(MoveList&) const;

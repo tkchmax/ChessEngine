@@ -131,6 +131,10 @@ namespace castling {
     constexpr U64 pathBlockers[CastlingRights::CR_NB] = { 0,W_CASTLING00_BLOCKERS_MASK, W_CASTLING000_BLOCKERS_MASK, 0,
                                                       B_CASTLING00_BLOCKERS_MASK, 0,0,0, B_CASTLING000_BLOCKERS_MASK };
 
+    constexpr U64 kingSafety[CastlingRights::CR_NB] = { 0, 0x60, 0xC, 0, 0x6000000000000000, 0,0,0, 0xC00000000000000 };
+
+    constexpr ESquare kingSafetySq[CastlingRights::CR_NB] = { SQ_NONE, F1, D1, SQ_NONE, F8, SQ_NONE, SQ_NONE, SQ_NONE, D8 };
+
     constexpr U64 pathBlockers00[COLOR_NB] = { W_CASTLING00_BLOCKERS_MASK, B_CASTLING00_BLOCKERS_MASK };
 
     constexpr U64 pathBlockers000[COLOR_NB] = { W_CASTLING000_BLOCKERS_MASK, B_CASTLING000_BLOCKERS_MASK };

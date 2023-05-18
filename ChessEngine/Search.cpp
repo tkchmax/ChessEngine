@@ -2,8 +2,8 @@
 #include "Position.h"
 #include "Evaluate.h"
 #include "Transposition.h"
+#include "UCI.h"
 #include <iostream>
-#include <chrono>
 #include <memory>
 
 namespace {
@@ -44,8 +44,21 @@ namespace {
         }
     }
 
+    //UCI time control
+    bool isStopped = false;
+
+    void communicate() {
+        if (UCI::flags.timeset && UCI::get_time_ms() > UCI::flags.stoptime) {
+            isStopped = true;
+        }
+    }
+
     //Quiescence Search
     int quies(int alpha, int beta, const Position& pos) {
+        if ((ss.nNodes & 2047) == 0) {
+            communicate();
+        }
+
         int eval = evaluate::eval(pos, pos.side_to_move());
         if (eval >= beta) {
             return beta;
@@ -61,11 +74,11 @@ namespace {
         for (int i = 0; i < forcedMoves.size(); ++i) {
             forcedMoves.pick(i);
 
-            if (!pos.is_move_legal(forcedMoves[i])) {
+            Position newPos = pos.make_move(forcedMoves[i]);
+
+            if (newPos.is_king_attacked(pos.side_to_move())) {
                 continue;
             }
-
-            Position newPos = pos.make_move(forcedMoves[i]);
 
             ss.nNodes++;
             eval = -quies(-beta, -alpha, newPos);
@@ -93,6 +106,7 @@ namespace {
     Move prevMove = 0;
     int alpha_beta(int depth, int ply, int alpha, int beta, const Position& pos, bool doNull = true) {
 
+        assert(ply < 128);
         pvLength[ply] = ply;
 
         int bestMove = 0;
@@ -112,9 +126,7 @@ namespace {
         int pv_node = beta - alpha > 1;
 
         if (ply && cache->flag != HASH_EMPTY && cache->depth >= depth && pv_node == 0) {
-            //The score in the hash table is written relative to the white side
-            //Therefore, we need to make sure the stored score match the current side
-            int score = pos.side_to_move() == WHITE ? cache->score : -cache->score;
+            int score = cache->score;
 
             if (cache->flag == HASH_EXACT) {
                 return score;
@@ -125,6 +137,10 @@ namespace {
             if (cache->flag == HASH_BETA && score >= beta) {
                 return beta;
             }
+        }
+
+        if ((ss.nNodes & 2047) == 0) {
+            communicate();
         }
 
         if (depth == 0) {
@@ -142,7 +158,8 @@ namespace {
         //The idea is to give the opponent a free shot,
         //and if current position is still so good that exceed beta,
         //we assume that we'd also exceed beta if we went and searched all of the moves.
-        if (doNull && depth >= 3 && ply && !inCheck) {
+        //if (doNull && depth >= 3 && ply && !inCheck) {
+        if (depth >= 3 && ply && !inCheck) {
             //create temporary position
             Position nullPos(pos);
 
@@ -153,12 +170,18 @@ namespace {
             nullPos.set_side2move(~pos.side_to_move());
 
             //update hash
-            nullPos.recalcZobrist();
+            nullPos.recalc_zobrist();
+
+            repetitionTable[repetitionIndex++] = pos.get_zobrist();
 
             //do search with reduced depth
             int score = -alpha_beta(depth - 1 - 2, ply + 1, -beta, -beta + 1, nullPos, false);
 
-            //if even after two moves in a row opponent our score
+            repetitionIndex--;
+
+            if (isStopped) return 0;
+
+            //if even after two moves of opponent our score
             //is still >= beta, then make cut off
             if (score >= beta) {
                 return beta;
@@ -172,7 +195,8 @@ namespace {
 
             int newScore;
             //Fail low
-            //This position was not good enough for us even after adding the bonus value to the score 
+            //This position was not good enough for us
+            //even after adding the bonus value to the score 
             if (score < beta) {
                 if (depth == 1) {
                     newScore = quies(alpha, beta, pos);
@@ -222,16 +246,16 @@ namespace {
             //lift the best move to the list[i]
             moves.pick(i);
 
+            Position newPos = pos.make_move(moves[i]);
+
             //make sure move is legal
-            if (!pos.is_move_legal(moves[i])) {
+            if (newPos.is_king_attacked(pos.side_to_move())) {
                 continue;
             }
 
             //save hash of the current position to determine 3fold repetition later.
-            repetitionTable[repetitionIndex] = pos.get_zobrist();
-            repetitionIndex++;
+            repetitionTable[repetitionIndex++] = pos.get_zobrist();
 
-            Position newPos = pos.make_move(moves[i]);
             ss.nNodes++;
             nLegal++;
             prevMove = moves[i];
@@ -239,7 +263,7 @@ namespace {
             int score;
 
             //Full window search for the first move in the move-list
-            if (i == 0) {
+            if(nLegal == 0) {
                 score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
             }
             else {
@@ -248,14 +272,20 @@ namespace {
                 //all other moves at a reduced depth and a smaller window to try speed up the search
 
                 //Conditions to LMR
-                if (i >= 3 && depth >= 3 && !inCheck
+                if (nLegal >= 2 && depth >= 3 && !inCheck
                     && !pos.is_capture_move(moves[i]) && EMoveType(READ_MOVE_TYPE(moves[i])) != PROMOTION
-                    && !newPos.is_king_attacked(newPos.side_to_move()) && pvMove == 0 && pv_node == 0) {
-                    int r = nLegal > 10 && depth >= 4 ? 2 : 1;
+                    && !newPos.is_king_attacked(newPos.side_to_move())) {
+                    int r = nLegal <= 4 ? 1 : depth / 3;
+                    //int r = nLegal <= 4 ? 1 : depth +3;
+                    //int r = depth-1 + 1;
                     score = -alpha_beta(depth - 1 - r, ply + 1, -alpha - 1, -alpha, newPos, doNull);
                 }
                 else {
                     score = alpha + 1;
+                }
+
+                if (score > alpha) {
+                    score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
                 }
 
                 //Principal Variation Search. 
@@ -264,18 +294,18 @@ namespace {
                 //It again assumes that move ordering will be good enough that we won't find a better PV move
                 //Once we've found a move with a score that is between alpha and beta, the rest of the moves
                 //are searched with the goal of proving that they are all bad
-                if (score > alpha) {
-                    score = -alpha_beta(depth - 1, ply + 1, -alpha - 1, -alpha, newPos, doNull);
-                    //Check for failure, re-search full window and full depth.
-                    if (score > alpha && score < beta) {
-                        score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
-                    }
-                }
+                //if (score > alpha) {
+                //    score = -alpha_beta(depth - 1, ply + 1, -alpha - 1, -alpha, newPos, doNull);
+                //    //Check for failure, re-search full window and full depth.
+                //    if (score > alpha && score < beta) {
+                //        score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
+                //    }
+                //}
             }
 
             repetitionIndex--;
 
-            //int score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
+            if (isStopped) return 0;
 
             //current move improves score
             if (score > alpha) {
@@ -312,7 +342,7 @@ namespace {
                 }
 
                 //save position to hash table
-                ss.table->add(pos.get_zobrist(), bestMove, depth, pos.side_to_move() == WHITE ? beta : -beta, HASH_BETA);
+                ss.table->add(pos.get_zobrist(), bestMove, depth, beta, HASH_BETA);
 
                 return beta;
             }
@@ -324,7 +354,7 @@ namespace {
         }
 
         //save position to hash table
-        ss.table->add(pos.get_zobrist(), bestMove, depth, pos.side_to_move() == WHITE ? alpha : -alpha, hashf);
+        ss.table->add(pos.get_zobrist(), bestMove, depth, alpha, hashf);
 
         //Fails low
         //meaning that none of the moves in here will be any good
@@ -348,21 +378,31 @@ namespace search {
     s_search search(int depth, const Position& pos) {
         ss = Stats();
         std::vector<Move> pv;
+        isStopped = false;
 
-        auto start = std::chrono::high_resolution_clock::now();
+        //auto start = std::chrono::high_resolution_clock::now();
         int score = alpha_beta(depth, 0, -INF, INF, pos);
-        auto end = std::chrono::high_resolution_clock::now();
+        //auto end = std::chrono::high_resolution_clock::now();
 
-        auto timeMS = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
+        //auto timeMS = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
-        return { pv, timeMS, ss.nNodes, score };
+        return { pv, UCI::get_time_ms() - UCI::flags.starttime, ss.nNodes, score };
     }
 
-    int statsf = true;
+    bool _flag = true; //!
     s_search iterative_deepening(int depth, const Position& pos) {
-        ss = Stats();
+        if (_flag) {
+            ss = Stats();
+            _flag = false;
+        }
+
+        ss.nNodes = 0;
+        ss.killers = KillerHeuristic();
+        ss.hist = HistoryHeuristic();
+        ss.counterHist = CounterMoveHeuristic();
         scorePv = false;
         followPv = false;
+        isStopped = false;
         std::vector<Move> pv;
         s_search res;
 
@@ -372,14 +412,16 @@ namespace search {
 
         //Iterative deepenig
         for (int d = 1; d <= depth; ++d) {
-            ss.nNodes = 0;
+
             pv.clear();
             followPv = true;
 
-            auto start = std::chrono::high_resolution_clock::now();
-
             //search
             int score = alpha_beta(d, 0, alpha, beta, pos);
+
+            if (isStopped) {
+                break;
+            }
 
             //if we failed with current aspiration window, re-search with full
             if (score <= alpha || score >= beta) {
@@ -388,8 +430,6 @@ namespace search {
                 d--;
                 continue;
             }
-            auto end = std::chrono::high_resolution_clock::now();
-            auto timeMS = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
 
             //update aspiration window
             alpha = score - 50;
@@ -399,14 +439,23 @@ namespace search {
             for (int i = 0; i < pvLength[0]; ++i) {
                 pv.push_back(pvTable[0][i]);
             }
-            res = { pv, timeMS, ss.nNodes, score };
+            res = { pv, UCI::get_time_ms() - UCI::flags.starttime, ss.nNodes, score };
 
             std::cout << "info depth " << d << " " << res;
         }
         return res;
     }
 
-    U64 perft(const Position& pos, int depth)
+    std::ostream& operator<<(std::ostream& out, const PerftStat& s)
+    {
+        out << "Captures: " << s.nCapture << std::endl;
+        out << "EnPassant: " << s.nEnpassant << std::endl;
+        out << "Castles: " << s.nCastling << std::endl;
+        out << "Promotions: " << s.nPromotion << std::endl;
+        return out;
+    }
+
+    U64 perft(const Position& pos, int depth, PerftStat* stat)
     {
         U64 nodes = 0;
         if (depth == 0) {
@@ -414,16 +463,39 @@ namespace search {
         }
 
         MoveList moves;
-        pos.generate<LEGAL>(moves);
+        //pos.generate<LEGAL>(moves);
+        pos.generate<PSEUDO>(moves);
         for (int i = 0; i < moves.size(); ++i) {
+            //if (pos.is_move_legal(moves[i])) {
             Position newPos = pos.make_move(moves[i]);
+
+            if (newPos.is_king_attacked(~newPos.side_to_move())) {
+                continue;
+            }
+
+            if (stat != nullptr) {
+                EMoveType mt = EMoveType(READ_MOVE_TYPE(moves[i]));
+                if (mt == CASTLING) stat->nCastling++;
+                else if (mt == PROMOTION)  stat->nPromotion++; 
+                else if (mt == EN_PASSANT) stat->nEnpassant++;
+
+                EFigure capture = pos.on_square(READ_TO(moves[i]));
+
+
+                //EFigure capture = pos.on_square(READ_TO(moves[i]));
+                if (pos.is_capture_move(moves[i])) {
+                    stat->nCapture++;
+
+                }
+            }
 
             //if (newPos.get_zobrist() != Transposition::GetZobristHash(newPos)) {
             //    std::cout << "hash!\n";
             //    throw;
             //}
 
-            nodes += perft(newPos, depth - 1);
+            nodes += perft(newPos, depth - 1, stat);
+            //}
         }
 
         return nodes;

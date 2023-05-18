@@ -1,12 +1,15 @@
 #include <iostream>
 #include "Game.h"
 #include "Search.h"
+#include <chrono>
+#include "UCI.h"
 
+Position uciPosition;
 
 int main()
 {
-    Position pos;
-    std::cout << search::iterative_deepening(14, pos);
+    UCI::init();
+    UCI::loop();
 }
 
 

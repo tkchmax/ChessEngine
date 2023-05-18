@@ -76,7 +76,7 @@ void MoveList::sort(const KillerHeuristic& killers, const HistoryHeuristic& hist
                 list[i].score += hist[color][from][to];
 
                 if (list[i].move == countHist[READ_FROM(prevMove)][READ_TO(prevMove)]) {
-                    list[i].score += 10;
+                    list[i].score += 20;
                 }
             }
         }

@@ -59,7 +59,6 @@ namespace misc
     }
 
     void ShowBits(const U64& bitboard);
-
     inline unsigned long lsb(U64 bb) {
         assert(bb);
         unsigned long index;

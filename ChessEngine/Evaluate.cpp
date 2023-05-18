@@ -212,20 +212,8 @@ namespace evaluate {
     }
 
     int eval(const Position& pos, EColor relativeTo) {
-
-        //compute game-phase score
-        int gamePhaseScore = 0;
-        for (int f = KNIGHT; f <= QUEEN; ++f) {
-            gamePhaseScore +=
-                misc::countBits(pos.figures(WHITE, EFigureType(f))) * material_score[OPENNING][add_color(WHITE, EFigureType(f))]
-                - misc::countBits(pos.figures(BLACK, EFigureType(f))) * material_score[OPENNING][add_color(BLACK, EFigureType(f))];
-        }
-
-        //determine the current game phase
-        EGamePhase gp =
-            gamePhaseScore > opening_bounder_score ? EGamePhase::OPENNING :
-            gamePhaseScore < endgame_bounder_score ? EGamePhase::END_GAME :
-            EGamePhase::MIDDLE_GAME;
+        int gamePhaseScore = pos.phase_score();
+        EGamePhase gp = pos.phase();
 
         int score = 0;
         for (int type = PAWN; type <= KING; ++type) {

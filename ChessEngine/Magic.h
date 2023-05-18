@@ -37,7 +37,7 @@ inline U64 Magic::getBishopAttack(ESquare square, U64 occ) const {
 }
 
 template <EFigureType fig_type>
-U64 GetAttackBB(ESquare sq, U64 occ = 0) {
+inline U64 GetAttackBB(ESquare sq, U64 occ = 0) {
     assert(fig_type != PAWN);
 
     switch (fig_type) {

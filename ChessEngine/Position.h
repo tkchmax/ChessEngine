@@ -32,11 +32,14 @@ public:
     void set_side2move(EColor color);
     void set_en_passant(ESquare sq);
     U64 attack_to(ESquare square) const;
-    EGamePhase game_phase() const;
-    void recalcZobrist();
-    EGamePhase calculate_game_phase() const;
+    EGamePhase phase() const;
+    void recalc_zobrist();
+    int calculate_phase_score() const;
+    EGamePhase calculate_phase() const;
+    int phase_score() const;
 
     Position make_move(Move m) const;
+    Position make_move(std::string algNotation) const;
 
     template<EGenType>
     void generate(MoveList&) const;
@@ -56,19 +59,34 @@ private:
     ESquare enPassant;
     EColor sideToMove;
     EGamePhase gp;
+    int gpScore;
+
+    U64 attackedSquares;
 
     U64 zobrist;
 
     int figureCount[FIGURE_NB];
 };
 
-inline EGamePhase Position::game_phase() const {
+inline EGamePhase Position::phase() const {
     return gp;
 }
 
-inline void Position::recalcZobrist()
+inline void Position::recalc_zobrist()
 {
     zobrist = Transposition::GetZobristHash(*this);
+}
+
+inline int Position::calculate_phase_score() const
+{
+    using namespace evaluate;
+    int score = 0;
+    for (int f = KNIGHT; f <= QUEEN; ++f) {
+        score +=
+            misc::countBits(figures(WHITE, EFigureType(f))) * material_score[OPENNING][add_color(WHITE, EFigureType(f))]
+            - misc::countBits(figures(BLACK, EFigureType(f))) * material_score[OPENNING][add_color(BLACK, EFigureType(f))];
+    }
+    return score;
 }
 
 inline U64 Position::figures(EFigureType type) const {

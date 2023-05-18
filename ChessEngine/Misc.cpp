@@ -40,7 +40,7 @@ void misc::ShowBits(const U64& bitboard)
 
 std::string misc::ToString(ESquare square)
 {
-    assert((int)square >= 0 && (int)square < 64);
+    assert((int)square >= A1 && (int)square <= SQ_NB);
     switch (square)
     {
     case ESquare::A1: return "a1";
@@ -114,6 +114,7 @@ std::string misc::ToString(ESquare square)
     case ESquare::H6: return "h6";
     case ESquare::H7: return "h7";
     case ESquare::H8: return "h8";
+    default: return "-";
     }
 }
 
@@ -176,5 +177,18 @@ std::string misc::ToString(EMoveType movetype)
 
 std::string misc::ToString(Move move)
 {
-    return ToString(ESquare(READ_FROM(move))) + ToString(ESquare(READ_TO(move)));
+    static constexpr char promotionSymbol[FIGURE_NB] = { '-', '-','n','b','r','q','-' };
+    ESquare from = ESquare(READ_FROM(move));
+    ESquare to = ESquare(READ_TO(move));
+    EMoveType mt = EMoveType(READ_MOVE_TYPE(move));
+
+    if (mt == CASTLING) {
+        to = to > from ? ESquare(to - 1) : ESquare(to + 2);
+    }
+
+    else if (mt == PROMOTION) {
+        return ToString(from) + ToString(to) + promotionSymbol[READ_FIGURE(move)];
+    }
+
+    return ToString(from) + ToString(to);
 }

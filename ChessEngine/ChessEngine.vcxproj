@@ -154,6 +154,7 @@
     <ClCompile Include="Rays.cpp" />
     <ClCompile Include="Search.cpp" />
     <ClCompile Include="Transposition.cpp" />
+    <ClCompile Include="UCI.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Evaluate.h" />
@@ -167,6 +168,7 @@
     <ClInclude Include="Rays.h" />
     <ClInclude Include="Search.h" />
     <ClInclude Include="Transposition.h" />
+    <ClInclude Include="UCI.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
