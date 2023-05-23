@@ -1,13 +1,14 @@
 #include "MoveList.h"
 #include "Misc.h"
+#include "Position.h"
 
 class Transposition;
 
 namespace {
     constexpr int HASH_MOVE_BONUS = 30000;
     constexpr int PV_MOVE_BONUS = 20000;
-    constexpr int FIRST_KILLER_BONUS = 9000;
-    constexpr int SECOND_KILLER_BONUS = 8000;
+    constexpr int FIRST_KILLER_BONUS = 900;
+    constexpr int SECOND_KILLER_BONUS = 800;
 }
 
 Move MoveList::operator[](int idx) const
@@ -63,22 +64,22 @@ void MoveList::sort(const KillerHeuristic& killers, const HistoryHeuristic& hist
             if (list[i].move == pvMove) {
                 list[i].score += PV_MOVE_BONUS;
             }
-            else if (list[i].move == killers[0][ply]) {
+            if (list[i].move == killers[0][ply]) {
                 list[i].score += FIRST_KILLER_BONUS;
             }
             else if (list[i].move == killers[1][ply]) {
                 list[i].score += SECOND_KILLER_BONUS;
             }
-            else {
-                int from = READ_FROM(list[i].move);
-                int to = READ_TO(list[i].move);
+            //else {
+            int from = READ_FROM(list[i].move);
+            int to = READ_TO(list[i].move);
 
-                list[i].score += hist[color][from][to];
+            list[i].score += hist[color][from][to];
 
-                if (list[i].move == countHist[READ_FROM(prevMove)][READ_TO(prevMove)]) {
-                    list[i].score += 20;
-                }
+            if (list[i].move == countHist[from][to]) {
+                list[i].score += 100;
             }
+            //}
         }
     }
 }

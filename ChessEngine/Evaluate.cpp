@@ -201,16 +201,6 @@ namespace {
 
 namespace evaluate {
 
-    inline int calc_gamephase_score(const Position& pos) {
-        int score = 0;
-        for (int f = KNIGHT; f <= QUEEN; ++f) {
-            score +=
-                misc::countBits(pos.figures(WHITE, EFigureType(f))) * material_score[OPENNING][add_color(WHITE, EFigureType(f))]
-                - misc::countBits(pos.figures(BLACK, EFigureType(f))) * material_score[OPENNING][add_color(BLACK, EFigureType(f))];
-        }
-        return score;
-    }
-
     int eval(const Position& pos, EColor relativeTo) {
         int gamePhaseScore = pos.phase_score();
         EGamePhase gp = pos.phase();

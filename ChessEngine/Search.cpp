@@ -6,6 +6,10 @@
 #include <iostream>
 #include <memory>
 
+U64 repetitionTable[1000];
+int repetitionIndex;
+bool boolBranch = true;
+int branchingFactor;
 namespace {
     struct Stats {
         Stats() :
@@ -24,9 +28,6 @@ namespace {
 
     int pvLength[64];
     Move pvTable[64][64];
-
-    U64 repetitionTable[1000];
-    int repetitionIndex;
 
     bool followPv = false;
     bool scorePv = false;
@@ -106,10 +107,9 @@ namespace {
     Move prevMove = 0;
     int alpha_beta(int depth, int ply, int alpha, int beta, const Position& pos, bool doNull = true) {
 
-        assert(ply < 128);
         pvLength[ply] = ply;
 
-        int bestMove = 0;
+        Move bestMove = 0;
 
         EHashFlag hashf = HASH_ALPHA;
 
@@ -118,7 +118,7 @@ namespace {
 
         //3 fold repetition rule
         //check if current position has already been before in the current search tree
-        if (IsRepetition(pos)) {
+        if (ply && IsRepetition(pos)) {
             return 0;
         }
 
@@ -158,9 +158,7 @@ namespace {
         //The idea is to give the opponent a free shot,
         //and if current position is still so good that exceed beta,
         //we assume that we'd also exceed beta if we went and searched all of the moves.
-        //if (doNull && depth >= 3 && ply && !inCheck) {
-        if (depth >= 3 && ply && !inCheck) {
-            //create temporary position
+        if (!followPv && depth >= 3 && ply && !inCheck) {
             Position nullPos(pos);
 
             //delete en passant
@@ -172,12 +170,8 @@ namespace {
             //update hash
             nullPos.recalc_zobrist();
 
-            repetitionTable[repetitionIndex++] = pos.get_zobrist();
-
             //do search with reduced depth
             int score = -alpha_beta(depth - 1 - 2, ply + 1, -beta, -beta + 1, nullPos, false);
-
-            repetitionIndex--;
 
             if (isStopped) return 0;
 
@@ -263,7 +257,7 @@ namespace {
             int score;
 
             //Full window search for the first move in the move-list
-            if(nLegal == 0) {
+            if (nLegal == 0) {
                 score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
             }
             else {
@@ -272,12 +266,11 @@ namespace {
                 //all other moves at a reduced depth and a smaller window to try speed up the search
 
                 //Conditions to LMR
-                if (nLegal >= 2 && depth >= 3 && !inCheck
-                    && !pos.is_capture_move(moves[i]) && EMoveType(READ_MOVE_TYPE(moves[i])) != PROMOTION
-                    && !newPos.is_king_attacked(newPos.side_to_move())) {
-                    int r = nLegal <= 4 ? 1 : depth / 3;
-                    //int r = nLegal <= 4 ? 1 : depth +3;
-                    //int r = depth-1 + 1;
+                if (nLegal >= 4 && depth >= 3 && !inCheck
+                    && !pos.is_capture_move(moves[i]) && EMoveType(READ_MOVE_TYPE(moves[i])) != PROMOTION) {
+                    int r = nLegal <= 6 ? 
+                        newPos.phase() < 2500 ? 2 : 1
+                        : depth / 3;
                     score = -alpha_beta(depth - 1 - r, ply + 1, -alpha - 1, -alpha, newPos, doNull);
                 }
                 else {
@@ -294,11 +287,13 @@ namespace {
                 //It again assumes that move ordering will be good enough that we won't find a better PV move
                 //Once we've found a move with a score that is between alpha and beta, the rest of the moves
                 //are searched with the goal of proving that they are all bad
-                //if (score > alpha) {
+                //if (score > alpha)
+                //{
                 //    score = -alpha_beta(depth - 1, ply + 1, -alpha - 1, -alpha, newPos, doNull);
                 //    //Check for failure, re-search full window and full depth.
                 //    if (score > alpha && score < beta) {
                 //        score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
+                //        //std::cout << "fail PVS\n";
                 //    }
                 //}
             }
@@ -335,7 +330,8 @@ namespace {
                     ss.killers[0][ply] = moves[i];
 
                     //History Heuristic
-                    ss.hist[pos.side_to_move()][READ_FROM(moves[i])][READ_TO(moves[i])] = depth * depth;
+                    ss.hist[pos.side_to_move()][READ_FROM(moves[i])][READ_TO(moves[i])] = 1 << depth;
+                    //ss.hist[pos.side_to_move()][READ_FROM(moves[i])][READ_TO(moves[i])] += 1 << depth;
 
                     //Countermove Heuristic
                     ss.counterHist[READ_FROM(prevMove)][READ_TO(prevMove)] = moves[i]; //!
@@ -396,10 +392,11 @@ namespace search {
             _flag = false;
         }
 
-        ss.nNodes = 0;
         ss.killers = KillerHeuristic();
         ss.hist = HistoryHeuristic();
         ss.counterHist = CounterMoveHeuristic();
+
+        ss.nNodes = 0;
         scorePv = false;
         followPv = false;
         isStopped = false;
@@ -443,6 +440,7 @@ namespace search {
 
             std::cout << "info depth " << d << " " << res;
         }
+        repetitionIndex = 0;
         return res;
     }
 
@@ -476,7 +474,7 @@ namespace search {
             if (stat != nullptr) {
                 EMoveType mt = EMoveType(READ_MOVE_TYPE(moves[i]));
                 if (mt == CASTLING) stat->nCastling++;
-                else if (mt == PROMOTION)  stat->nPromotion++; 
+                else if (mt == PROMOTION)  stat->nPromotion++;
                 else if (mt == EN_PASSANT) stat->nEnpassant++;
 
                 EFigure capture = pos.on_square(READ_TO(moves[i]));

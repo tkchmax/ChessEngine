@@ -29,6 +29,7 @@ struct s_move {
     int score;
 };
 
+class Position;
 class MoveList
 {
 public:
@@ -41,13 +42,14 @@ public:
     void pick(int idx);
     int size() const { return len; }
     void sort(const KillerHeuristic&,
-              const HistoryHeuristic&,
-              const CounterMoveHeuristic&,
-              Move cacheMove,
-              Move prevMove,
-              Move pvMove,
-              int,
-              EColor);
+        const HistoryHeuristic&,
+        const CounterMoveHeuristic&,
+        Move cacheMove,
+        Move prevMove,
+        Move pvMove,
+        int,
+        EColor
+    );
 
 private:
     s_move list[cmove_list::capacity];

@@ -8,6 +8,8 @@
 #include <time.h>
 
 extern Position uciPosition;
+extern U64 repetitionTable[1000];
+extern int repetitionIndex;
 
 std::unordered_map<std::string, UCI*> UCI::uci = std::unordered_map<std::string, UCI*>();
 UCI::Flags UCI::flags = UCI::Flags();
@@ -36,8 +38,11 @@ std::vector<std::string> UCI_POSITION::handle(std::vector<std::string> args)
     }
 
     if (movesIdx && args.at(movesIdx) == "moves") {
+        repetitionIndex = 0;
         for (int i = movesIdx + 1; i < args.size(); ++i) {
             uciPosition = uciPosition.make_move(args[i]);
+            if(i != args.size() - 1 )
+                repetitionTable[repetitionIndex++] = uciPosition.get_zobrist();
         }
     }
     
@@ -81,11 +86,11 @@ std::vector<std::string> UCI_GO::handle(std::vector<std::string> args)
         " time: " << UCI::flags.time <<
         " start: " << UCI::flags.starttime <<
         " stop: " << UCI::flags.stoptime <<
-        " depth" << depth << std::endl;
+        " depth: " << depth << std::endl;
 
     search::s_search res = search::iterative_deepening(depth, uciPosition);
 
-    return { "bestmove " + misc::ToString(res.pv[0]) };
+    return { "bestmove " + misc::ToString(res.pv.at(0)) };
 }
 
 void UCI::init()

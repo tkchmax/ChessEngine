@@ -21,16 +21,6 @@ namespace {
         {0,500,1500,2500,3500,4500,5500},
     };
 
-    //constexpr int MVV_LVA_BONUS[7][7] = {
-    //{0,0,0,0,0,0,0},
-    //{0,0,0,0,0,0,0},
-    //{0,0,0,0,0,0,0},
-    //{0,0,0,0,0,0,0},
-    //{0,0,0,0,0,0,0},
-    //{0,0,0,0,0,0,0},
-    //{0,0,0,0,0,0,0},
-    //};
-
     template<EColor color>
     U64 GetPawnAttackBB(U64 pawnsBB) {
         return color == WHITE ?
@@ -180,22 +170,12 @@ namespace {
                 bool rookExist = TO_BITBOARD(castling::rookSquare[cr]) & pos.figures(color, ROOK);
                 if (pos.can_castling(cr) && !pos.is_castling_impeded(cr) && rookExist) {
                     ESquare ksq = color == WHITE ? E1 : E8;
-                    //ESquare kSafetySq = cr == WHITE_00 ? F1 
-                        //cr == WHITE_000 ? D1 : BLACK_;
-                    
+
                     if (!(pos.attack_to(ksq) & pos.figures(opColor))) {
                         if (!(pos.attack_to(castling::kingSafetySq[cr]) & pos.figures(opColor))) {
                             list.add(EncodeMove<CASTLING>(ksq, castling::rookSquare[cr], KING));
                         }
                     }
-
-                    //if (!pos.is_king_attacked(color)) {
-                            //ESquare ksq = ESquare(misc::lsb(pos.figures(color, KING)));
-                            
-                            //list.add(EncodeMove<CASTLING>(color == WHITE ? E1 : E8, castling::rookSquare[cr], KING));
-                        //ESquare ksq = ESquare(misc::lsb(pos.figures(color, KING)));
-                        //list.add(EncodeMove<CASTLING>(ksq, castling::rookSquare[cr], KING));
-                    //}
                 }
             }
         }
@@ -380,9 +360,9 @@ std::ostream& operator<<(std::ostream& out, const Position& pos)
 
     std::string castling(4, ' ');
     int cr = pos.get_castling_rights();
-    castling[0] = (cr & WHITE_00)  ? 'K' : '-';
+    castling[0] = (cr & WHITE_00) ? 'K' : '-';
     castling[1] = (cr & WHITE_000) ? 'Q' : '-';
-    castling[2] = (cr & BLACK_00)  ? 'k' : '-';
+    castling[2] = (cr & BLACK_00) ? 'k' : '-';
     castling[3] = (cr & BLACK_000) ? 'q' : '-';
 
     out << std::setw(15) << "Castling: " << std::setw(5) << castling << std::endl << std::endl;
@@ -403,26 +383,6 @@ U64 Position::attack_to(ESquare square) const {
 
 bool Position::is_move_legal(Move move) const
 {
-    EMoveType move_type = EMoveType(READ_MOVE_TYPE(move));
-    int from = READ_FROM(move);
-    int to = READ_TO(move);
-
-    //if castling, check blockers on its way
-    if (move_type == CASTLING) {
-        int step = to > from ? 1 : -1;
-        for (int s = from + 1; s != to; s += step) {
-            if (attack_to(ESquare(s)) & byColorBB[~sideToMove]) {
-                return false;
-            }
-        }
-    }
-    //if king move, check if destination sqaure is not under attack
-    else if (READ_FIGURE(move) == KING) {
-        bool b = !(attack_to(ESquare(to)) & byColorBB[~sideToMove]);
-        return !(attack_to(ESquare(to)) & byColorBB[~sideToMove]);
-    }
-
-    //else make move, check if king is under attack
     Position tempPos = make_move(move);
     return !tempPos.is_king_attacked(sideToMove);
 }
@@ -500,7 +460,7 @@ Position Position::make_move(Move m) const
     }
 
     //Set new game phase
-    newPos.gp = 
+    newPos.gp =
         newPos.gpScore > evaluate::opening_bounder_score ? EGamePhase::OPENNING :
         newPos.gpScore < evaluate::endgame_bounder_score ? EGamePhase::END_GAME :
         EGamePhase::MIDDLE_GAME;
@@ -547,6 +507,9 @@ void Position::generate<LEGAL>(MoveList& legalMoves) const {
     generate<PSEUDO>(pseudoMoves);
 
     for (int i = 0; i < pseudoMoves.size(); ++i) {
+        if (EMoveType(READ_MOVE_TYPE(pseudoMoves[i]) == CASTLING)) {
+            std::cout << "";
+        }
         if (is_move_legal(pseudoMoves[i])) {
             legalMoves.add(pseudoMoves[i], pseudoMoves.get_score(i));
         }
@@ -554,7 +517,7 @@ void Position::generate<LEGAL>(MoveList& legalMoves) const {
 }
 
 Position Position::make_move(std::string algNotation) const
-{   
+{
     MoveList list;
     generate<LEGAL>(list);
 
