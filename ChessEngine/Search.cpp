@@ -471,21 +471,28 @@ namespace search {
                 continue;
             }
 
-            if (stat != nullptr) {
-                EMoveType mt = EMoveType(READ_MOVE_TYPE(moves[i]));
-                if (mt == CASTLING) stat->nCastling++;
-                else if (mt == PROMOTION)  stat->nPromotion++;
-                else if (mt == EN_PASSANT) stat->nEnpassant++;
+            //if (stat != nullptr) {
+            //    EMoveType mt = EMoveType(READ_MOVE_TYPE(moves[i]));
+            //    if (mt == CASTLING) stat->nCastling++;
+            //    else if (mt == PROMOTION)  stat->nPromotion++;
+            //    else if (mt == EN_PASSANT) stat->nEnpassant++;
 
-                EFigure capture = pos.on_square(READ_TO(moves[i]));
+            //    EFigure capture = pos.on_square(READ_TO(moves[i]));
 
 
-                //EFigure capture = pos.on_square(READ_TO(moves[i]));
-                if (pos.is_capture_move(moves[i])) {
-                    stat->nCapture++;
+            //    //EFigure capture = pos.on_square(READ_TO(moves[i]));
+            //    if (pos.is_capture_move(moves[i])) {
+            //        stat->nCapture++;
 
-                }
-            }
+            //    }
+            //}
+
+            //int eval = evaluate::eval(newPos, WHITE);
+            //int eval2 = evaluate::eval2(newPos, WHITE);
+            //if (eval != eval2) {
+            //    std::cout << eval << std::endl;
+            //    std::cout << eval2 << std::endl<<std::endl;
+            //}
 
             //if (newPos.get_zobrist() != Transposition::GetZobristHash(newPos)) {
             //    std::cout << "hash!\n";

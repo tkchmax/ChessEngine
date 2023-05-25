@@ -279,14 +279,27 @@ namespace evaluate {
     constexpr int endgame_bounder_score = 518;
 
     // material score [game phase][piece]
-    constexpr int material_score[2][FIGURE_NB]
+    //constexpr int material_score[2][FIGURE_NB]
+    //{
+    //    // opening material score
+    //    0, 82, 337, 365, 477, 1025, 12000, 0, 0, -82, -337, -365, -477, -1025, -12000,
+
+    //    // endgame material score
+    //    0, 94, 281, 297, 512,  936, 12000, 0 , 0, -94, -281, -297, -512,  -936, -12000
+    //};
+
+    constexpr int material_score[2][FIGURE_TYPE_NB]
     {
         // opening material score
-        0, 82, 337, 365, 477, 1025, 12000, 0, 0, -82, -337, -365, -477, -1025, -12000,
-
+        0, 82, 337, 365, 477, 1025, 12000, 0,
         // endgame material score
-        0, 94, 281, 297, 512,  936, 12000, 0 , 0, -94, -281, -297, -512,  -936, -12000
+        0, 94, 281, 297, 512,  936, 12000, 0
     };
+
+    namespace penalty {
+        constexpr int doubledPawnOpening = -5;
+        constexpr int doubledPawnEndgame = -10;
+    }
 }
 
 #endif //CONSTANTS_H_

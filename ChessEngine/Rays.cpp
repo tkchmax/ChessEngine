@@ -80,7 +80,7 @@ namespace {
             (TO_BITBOARD(sq - 7) & ~bitboards::A_FILE) | TO_BITBOARD(sq - 8) | (TO_BITBOARD(sq - 9) & ~bitboards::H_FILE);
     }
 }
-
+#include <iostream>
 Rays::Rays()
 {
     std::uint64_t north = 0x0101010101010100;
@@ -180,6 +180,13 @@ Rays::Rays()
         figurePseudoAttacks[KING][sq] = GetKingRays(ESquare(sq));
         pawnPseudoAttacks[WHITE][sq] = GetPawnRays(WHITE, ESquare(sq));
         pawnPseudoAttacks[BLACK][sq] = GetPawnRays(BLACK, ESquare(sq));
+    }
+
+    for (int f = 0; f < 8; ++f) {
+        for (int i = 0; i < 8; ++i) {
+            assert(f + i * 8 < 64);
+            fileMask[f + i * 8] = bitboards::A_FILE << f;
+        }
     }
 }
 

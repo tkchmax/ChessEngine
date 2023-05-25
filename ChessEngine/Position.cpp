@@ -416,13 +416,8 @@ Position Position::make_move(Move m) const
 
         //Update game-phase if needed
         if (type_of(capture) >= KNIGHT && type_of(capture) <= QUEEN) {
-            int updVal = evaluate::material_score[OPENNING][capture];
-
-            newPos.gpScore += color == WHITE ? updVal : -updVal;
-
-            if (newPos.calculate_phase_score() != newPos.gpScore) {
-                std::cout << "";
-            }
+            newPos.gpScore -= evaluate::material_score[OPENNING][type_of(capture)];
+            assert(newPos.calculate_phase_score() == newPos.gpScore);
         }
     }
 
@@ -446,7 +441,8 @@ Position Position::make_move(Move m) const
     else if (move_type == PROMOTION) {
         newPos.remove_figure(from);
         newPos.create_figure(to, add_color(color, fig));
-        //Upd game phase score
+
+        //Update game phase score
         newPos.gpScore += evaluate::material_score[OPENNING][fig];
     }
     else if (move_type == EN_PASSANT) {
@@ -454,10 +450,7 @@ Position Position::make_move(Move m) const
         newPos.move_figure(from, to);
     }
 
-    if (newPos.calculate_phase_score() != newPos.gpScore) {
-        std::cout << "";
-        throw;
-    }
+    assert(newPos.calculate_phase_score() == newPos.gpScore);
 
     //Set new game phase
     newPos.gp =

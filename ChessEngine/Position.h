@@ -82,9 +82,9 @@ inline int Position::calculate_phase_score() const
     using namespace evaluate;
     int score = 0;
     for (int f = KNIGHT; f <= QUEEN; ++f) {
-        score +=
-            misc::countBits(figures(WHITE, EFigureType(f))) * material_score[OPENNING][add_color(WHITE, EFigureType(f))]
-            - misc::countBits(figures(BLACK, EFigureType(f))) * material_score[OPENNING][add_color(BLACK, EFigureType(f))];
+           score +=
+            misc::countBits(figures(WHITE, EFigureType(f))) * material_score[OPENNING][f]
+            + misc::countBits(figures(BLACK, EFigureType(f))) * material_score[OPENNING][f];
     }
     return score;
 }

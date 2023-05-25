@@ -3,6 +3,7 @@
 #include "Magic.h"
 
 namespace {
+
     // positional piece scores [game phase][piece][square]
     constexpr int positional_score[2][7][64] =
         // opening positional piece scores //
@@ -151,7 +152,7 @@ namespace {
         -53, -34, -21, -11, -28, -14, -24, -43
     };
 
-    constexpr int mirror_square[128] =
+    constexpr ESquare mirror_square[64] =
     {
         A8, B8, C8, D8, E8, F8, G8, H8,
         A7, B7, C7, D7, E7, F7, G7, H7,
@@ -164,38 +165,43 @@ namespace {
     };
 
 
-    template<EColor color>
-    inline int GetFigureTaperedEval(EFigureType type, U64 bb, EGamePhase gp, int gamePhaseScore) {
+    template<EColor color, EFigureType type>
+    inline void EvalType(const Position& pos, int& opening_score, int& endgame_score) {
         using namespace evaluate;
-        int posEval = 0, materialEval = 0;
+        int sideCoef = color == WHITE ? 1 : -1;
+        U64 bb = pos.figures(color, type);
         while (bb) {
-            int sq;
-            if constexpr (color == WHITE) {
-                sq = mirror_square[misc::pop_lsb(bb)];
-            }
-            else {
-                sq = misc::pop_lsb(bb);
+
+            int sq = misc::pop_lsb(bb);
+            int mirroredSq = mirror_square[sq];
+
+            opening_score += sideCoef * positional_score[OPENNING][type][color == WHITE ? mirroredSq : sq];
+            opening_score += sideCoef * material_score[OPENNING][type];
+
+            endgame_score += sideCoef * positional_score[END_GAME][type][color == WHITE ? mirroredSq : sq];
+            endgame_score += sideCoef * material_score[END_GAME][type];
+
+            if constexpr (type == PAWN) {
+                //doubled penalty
+                int nDoubled = misc::countBits(pos.figures(color, PAWN) & Rays::Get().getFileMask()[sq]);
+                if (nDoubled > 1) {
+                    opening_score += sideCoef * (nDoubled - 1) * evaluate::penalty::doubledPawnOpening;
+                    endgame_score += sideCoef * (nDoubled - 1) * evaluate::penalty::doubledPawnEndgame;
+                }
             }
 
-            //Positional Eval
-            posEval += gp == MIDDLE_GAME ?
-                (positional_score[OPENNING][type][sq] * gamePhaseScore +
-                positional_score[END_GAME][type][sq] * (opening_bounder_score - gamePhaseScore)) / opening_bounder_score
-                :
-                positional_score[gp][type][sq];
-            
-            //Material Eval
-            materialEval += gp == MIDDLE_GAME ?
-                (material_score[OPENNING][add_color(color, type)] * gamePhaseScore +
-                material_score[END_GAME][add_color(color, type)] * (opening_bounder_score - gamePhaseScore)) / opening_bounder_score
-                :
-                material_score[gp][add_color(color, type)];
-        }
+            //if constexpr (type == BISHOP || type == ROOK || type == QUEEN) {
+            //    //mobility
+            //    opening_score += GetAttackBB<type>(sq, pos.figures(ALL_FIGURE_TYPE));
+            //}
 
-        if constexpr (color == BLACK) {
-            return materialEval - posEval;
+            if constexpr (type == KING) {
+                //king safety
+                int bonus = sideCoef * misc::countBits(Rays::Get().getPseudoAttacks()[KING][sq] & pos.figures(color)) * 5;
+                opening_score += bonus;
+                endgame_score += bonus;
+            }
         }
-        return materialEval + posEval;
     }
 }
 
@@ -205,15 +211,32 @@ namespace evaluate {
         int gamePhaseScore = pos.phase_score();
         EGamePhase gp = pos.phase();
 
-        int score = 0;
-        for (int type = PAWN; type <= KING; ++type) {
-            U64 wfiguresBB = pos.figures(WHITE, EFigureType(type));
-            U64 bfiguresBB = pos.figures(BLACK, EFigureType(type));
+        int openingScore = 0;
+        int endgameScore = 0;
+        EvalType<WHITE, PAWN>(pos, openingScore, endgameScore);
+        EvalType<BLACK, PAWN>(pos, openingScore, endgameScore);
 
-           score += 
-                  GetFigureTaperedEval<WHITE>(EFigureType(type), wfiguresBB, gp, gamePhaseScore)
-                + GetFigureTaperedEval<BLACK>( EFigureType(type), bfiguresBB, gp, gamePhaseScore);
-        }
+        EvalType<WHITE, KNIGHT>(pos, openingScore, endgameScore);
+        EvalType<BLACK, KNIGHT>(pos, openingScore, endgameScore);
+
+        EvalType<WHITE, BISHOP>(pos, openingScore, endgameScore);
+        EvalType<BLACK, BISHOP>(pos, openingScore, endgameScore);
+
+        EvalType<WHITE, ROOK>(pos, openingScore, endgameScore);
+        EvalType<BLACK, ROOK>(pos, openingScore, endgameScore);
+
+        EvalType<WHITE, QUEEN>(pos, openingScore, endgameScore);
+        EvalType<BLACK, QUEEN>(pos, openingScore, endgameScore);
+
+        EvalType<WHITE, KING>(pos, openingScore, endgameScore);
+        EvalType<BLACK, KING>(pos, openingScore, endgameScore);
+
+        //interpolation between opening and endgame scores
+        int score = gp == MIDDLE_GAME ?
+            (openingScore * gamePhaseScore +
+                endgameScore * (opening_bounder_score - gamePhaseScore)) / opening_bounder_score
+            :
+            gp == OPENNING ? openingScore : endgameScore;
 
         //score relative to the given side
         return relativeTo == WHITE ? score : -score;
