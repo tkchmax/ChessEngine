@@ -17,11 +17,14 @@ UCI::Flags UCI::flags = UCI::Flags();
 std::vector<std::string> UCI_ISREADY::handle(std::vector<std::string> args)
 {
     return { "readyok" };
+    //return {};
 }
 
 std::vector<std::string> UCI_UCI::handle(std::vector<std::string> args)
 {
-    return { "id name Karasb", "id author Maksym Tkachenko", "uciok" };
+    return { "id name Karasb", "id author tkchmax", "uciok" };
+    //return {};
+
 }
 
 std::vector<std::string> UCI_POSITION::handle(std::vector<std::string> args)
@@ -58,7 +61,7 @@ std::vector<std::string> UCI_DRAW::handle(std::vector<std::string> args)
 std::vector<std::string> UCI_GO::handle(std::vector<std::string> args)
 {
     //default depth
-    int depth = 20;
+    int depth = 64;
 
     auto argument = args.begin();
     try {

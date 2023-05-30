@@ -4,6 +4,7 @@
 #include <chrono>
 #include "UCI.h"
 #include "Evaluate.h"
+#include "Rays.h"
 Position uciPosition;
 
 int main()

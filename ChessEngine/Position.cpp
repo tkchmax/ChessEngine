@@ -21,6 +21,9 @@ namespace {
         {0,500,1500,2500,3500,4500,5500},
     };
 
+    constexpr int promotionBonus = 5500;
+
+
     template<EColor color>
     U64 GetPawnAttackBB(U64 pawnsBB) {
         return color == WHITE ?
@@ -31,8 +34,8 @@ namespace {
     template<EGenType gentype, EDir dir>
     void MakePromotions(MoveList& list, ESquare to) {
         const ESquare from = ESquare(to - misc::shift_value<dir>());
-        list.add(EncodeMove<PROMOTION>(from, to, KNIGHT));
-        list.add(EncodeMove<PROMOTION>(from, to, QUEEN));
+        list.add(EncodeMove<PROMOTION>(from, to, KNIGHT), promotionBonus);
+        list.add(EncodeMove<PROMOTION>(from, to, QUEEN), promotionBonus+100);
     }
 
     template<EColor color, EGenType gentype>
@@ -374,9 +377,7 @@ U64 Position::attack_to(ESquare square) const {
         (GetPawnAttackBB<WHITE>(TO_BITBOARD(square)) & figures(BLACK, PAWN)) |
         (GetPawnAttackBB<BLACK>(TO_BITBOARD(square)) & figures(WHITE, PAWN)) |
         (GetAttackBB<KNIGHT>(square) & byTypeBB[KNIGHT]) |
-        //(GetAttackBB<BISHOP>(square, byTypeBB[ALL_FIGURE_TYPE] ^ figures(sideToMove, KING)) & (byTypeBB[BISHOP] | byTypeBB[QUEEN])) |
         (GetAttackBB<BISHOP>(square, byTypeBB[ALL_FIGURE_TYPE]) & (byTypeBB[BISHOP] | byTypeBB[QUEEN])) |
-        //(GetAttackBB<ROOK>(square, byTypeBB[ALL_FIGURE_TYPE] ^ figures(sideToMove, KING)) & (byTypeBB[ROOK] | byTypeBB[QUEEN])) |
         (GetAttackBB<ROOK>(square, byTypeBB[ALL_FIGURE_TYPE]) & (byTypeBB[ROOK] | byTypeBB[QUEEN])) |
         (GetAttackBB<KING>(square) & byTypeBB[KING]);
 }

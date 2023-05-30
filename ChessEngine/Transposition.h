@@ -43,6 +43,7 @@ public:
     void add(U64 hash, Move bestMove, int depth, int score, EHashFlag flag);
     const s_node* const get(U64 hash) const;
     const int get_capacity() const { return capacity; }
+    void clean();
 //private:
 public:
     static ZobristKeys zobristKeys;

@@ -279,15 +279,6 @@ namespace evaluate {
     constexpr int endgame_bounder_score = 518;
 
     // material score [game phase][piece]
-    //constexpr int material_score[2][FIGURE_NB]
-    //{
-    //    // opening material score
-    //    0, 82, 337, 365, 477, 1025, 12000, 0, 0, -82, -337, -365, -477, -1025, -12000,
-
-    //    // endgame material score
-    //    0, 94, 281, 297, 512,  936, 12000, 0 , 0, -94, -281, -297, -512,  -936, -12000
-    //};
-
     constexpr int material_score[2][FIGURE_TYPE_NB]
     {
         // opening material score
@@ -295,6 +286,8 @@ namespace evaluate {
         // endgame material score
         0, 94, 281, 297, 512,  936, 12000, 0
     };
+
+    const int passed_pawn_bonus[8] = { 0, 10, 30, 50, 75, 100, 150, 200 };
 
     namespace penalty {
         constexpr int doubledPawnOpening = -5;

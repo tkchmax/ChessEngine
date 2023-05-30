@@ -168,11 +168,11 @@ namespace {
     template<EColor color, EFigureType type>
     inline void EvalType(const Position& pos, int& opening_score, int& endgame_score) {
         using namespace evaluate;
-        int sideCoef = color == WHITE ? 1 : -1;
+        constexpr int sideCoef = color == WHITE ? 1 : -1;
         U64 bb = pos.figures(color, type);
         while (bb) {
 
-            int sq = misc::pop_lsb(bb);
+            ESquare sq = misc::pop_lsb(bb);
             int mirroredSq = mirror_square[sq];
 
             opening_score += sideCoef * positional_score[OPENNING][type][color == WHITE ? mirroredSq : sq];
@@ -188,12 +188,28 @@ namespace {
                     opening_score += sideCoef * (nDoubled - 1) * evaluate::penalty::doubledPawnOpening;
                     endgame_score += sideCoef * (nDoubled - 1) * evaluate::penalty::doubledPawnEndgame;
                 }
+
+                //passed pawn bonus 
+                if ((Rays::Get().getPassedPawnMask()[color][sq] & pos.figures(~color, PAWN)) == 0) {
+                    int bonus = passed_pawn_bonus[misc::square_to_rank[color == WHITE ? mirroredSq : sq]];
+                    opening_score += sideCoef * bonus;
+                    endgame_score += sideCoef * bonus;
+                }
+
             }
 
-            //if constexpr (type == BISHOP || type == ROOK || type == QUEEN) {
-            //    //mobility
-            //    opening_score += GetAttackBB<type>(sq, pos.figures(ALL_FIGURE_TYPE));
-            //}
+            if constexpr (type == BISHOP) {
+                //mobility
+                int mobilityBonus = misc::countBits(GetAttackBB<type>(sq, pos.figures(ALL_FIGURE_TYPE))) - 4;
+                opening_score += sideCoef * mobilityBonus * 5;
+                endgame_score += sideCoef * mobilityBonus * 5;
+            }
+
+            if constexpr (type == QUEEN) {
+                int mobilityBonus = misc::countBits(GetAttackBB<type>(sq, pos.figures(ALL_FIGURE_TYPE))) - 9;
+                opening_score += sideCoef * mobilityBonus;
+                endgame_score += sideCoef * mobilityBonus * 2;
+            }
 
             if constexpr (type == KING) {
                 //king safety

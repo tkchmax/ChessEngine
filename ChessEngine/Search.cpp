@@ -8,8 +8,7 @@
 
 U64 repetitionTable[1000];
 int repetitionIndex;
-bool boolBranch = true;
-int branchingFactor;
+
 namespace {
     struct Stats {
         Stats() :
@@ -171,7 +170,7 @@ namespace {
             nullPos.recalc_zobrist();
 
             //do search with reduced depth
-            int score = -alpha_beta(depth - 1 - 2, ply + 1, -beta, -beta + 1, nullPos, false);
+            int score = -alpha_beta(depth - 1 - 2, ply + 1, -beta, -beta + 1, nullPos, doNull);
 
             if (isStopped) return 0;
 
@@ -254,10 +253,9 @@ namespace {
             nLegal++;
             prevMove = moves[i];
 
-            int score;
-
             //Full window search for the first move in the move-list
-            if (nLegal == 0) {
+            int score;
+            if (nLegal < 2) {
                 score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
             }
             else {
@@ -267,18 +265,16 @@ namespace {
 
                 //Conditions to LMR
                 if (nLegal >= 4 && depth >= 3 && !inCheck
-                    && !pos.is_capture_move(moves[i]) && EMoveType(READ_MOVE_TYPE(moves[i])) != PROMOTION) {
+                    && !pos.is_capture_move(moves[i]) && EMoveType(READ_MOVE_TYPE(moves[i])) != PROMOTION
+                    && !newPos.is_king_attacked(newPos.side_to_move())) {
                     int r = nLegal <= 6 ? 
-                        newPos.phase() < 2500 ? 2 : 1
+                        newPos.phase_score() < 2500 ? 2 : 1
                         : depth / 3;
+
                     score = -alpha_beta(depth - 1 - r, ply + 1, -alpha - 1, -alpha, newPos, doNull);
                 }
                 else {
                     score = alpha + 1;
-                }
-
-                if (score > alpha) {
-                    score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
                 }
 
                 //Principal Variation Search. 
@@ -287,15 +283,15 @@ namespace {
                 //It again assumes that move ordering will be good enough that we won't find a better PV move
                 //Once we've found a move with a score that is between alpha and beta, the rest of the moves
                 //are searched with the goal of proving that they are all bad
-                //if (score > alpha)
-                //{
-                //    score = -alpha_beta(depth - 1, ply + 1, -alpha - 1, -alpha, newPos, doNull);
-                //    //Check for failure, re-search full window and full depth.
-                //    if (score > alpha && score < beta) {
-                //        score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
-                //        //std::cout << "fail PVS\n";
-                //    }
-                //}
+                if (score > alpha)
+                {
+                    score = -alpha_beta(depth - 1, ply + 1, -alpha - 1, -alpha, newPos, doNull);
+                    //Check for failure, re-search full window and full depth.
+                    if ((score > alpha) && (score < beta)) {
+                        score = -alpha_beta(depth - 1, ply + 1, -beta, -alpha, newPos, doNull);
+                        //std::cout << "fail PVS\n";
+                    }
+                }
             }
 
             repetitionIndex--;
@@ -331,7 +327,6 @@ namespace {
 
                     //History Heuristic
                     ss.hist[pos.side_to_move()][READ_FROM(moves[i])][READ_TO(moves[i])] = 1 << depth;
-                    //ss.hist[pos.side_to_move()][READ_FROM(moves[i])][READ_TO(moves[i])] += 1 << depth;
 
                     //Countermove Heuristic
                     ss.counterHist[READ_FROM(prevMove)][READ_TO(prevMove)] = moves[i]; //!
@@ -360,7 +355,11 @@ namespace {
 
 namespace search {
     std::ostream& operator<<(std::ostream& out, const s_search& s) {
-        out << "score cp " << s.score <<
+        std::string score = abs(s.score) > figure::KING_COST - MAX_PLY ?
+            "mate " + std::to_string((figure::KING_COST - abs(s.score)) / 2) :
+            "cp " + std::to_string(s.score);
+
+        out << "score " << score <<
             " nodes " << s.nNodes <<
             " time " << s.time <<
             " pv ";
@@ -385,11 +384,11 @@ namespace search {
         return { pv, UCI::get_time_ms() - UCI::flags.starttime, ss.nNodes, score };
     }
 
-    bool _flag = true; //!
+    bool initHashTableFlag = true;
     s_search iterative_deepening(int depth, const Position& pos) {
-        if (_flag) {
+        if (initHashTableFlag) {
             ss = Stats();
-            _flag = false;
+            initHashTableFlag = false;
         }
 
         ss.killers = KillerHeuristic();
@@ -436,6 +435,7 @@ namespace search {
             for (int i = 0; i < pvLength[0]; ++i) {
                 pv.push_back(pvTable[0][i]);
             }
+
             res = { pv, UCI::get_time_ms() - UCI::flags.starttime, ss.nNodes, score };
 
             std::cout << "info depth " << d << " " << res;
@@ -452,6 +452,7 @@ namespace search {
         out << "Promotions: " << s.nPromotion << std::endl;
         return out;
     }
+
 
     U64 perft(const Position& pos, int depth, PerftStat* stat)
     {
@@ -487,20 +488,7 @@ namespace search {
             //    }
             //}
 
-            //int eval = evaluate::eval(newPos, WHITE);
-            //int eval2 = evaluate::eval2(newPos, WHITE);
-            //if (eval != eval2) {
-            //    std::cout << eval << std::endl;
-            //    std::cout << eval2 << std::endl<<std::endl;
-            //}
-
-            //if (newPos.get_zobrist() != Transposition::GetZobristHash(newPos)) {
-            //    std::cout << "hash!\n";
-            //    throw;
-            //}
-
             nodes += perft(newPos, depth - 1, stat);
-            //}
         }
 
         return nodes;

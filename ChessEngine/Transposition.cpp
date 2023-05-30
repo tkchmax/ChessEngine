@@ -128,16 +128,30 @@ Transposition::~Transposition()
 
 void Transposition::add(U64 hash, Move bestMove, int depth, int score, EHashFlag flag)
 {
-    //int id = hash & capacity;
     int id = hash % capacity;
     s_node newNode(hash, bestMove, depth, score, flag);
 
+    //if (table[id].empty()) {
+    //    table[id] = newNode;
+    //    size += 1;
+    //}
+    //else if (hash == table[id].zobrist && depth >= table[id].depth) {
+    //    table[id] = newNode;
+    //}
+
     if (table[id].empty()) {
-        table[id] = newNode;
         size += 1;
     }
-    else if (hash == table[id].zobrist && depth >= table[id].depth) {
-        table[id] = newNode;
+    table[id] = newNode;
+}
+
+void Transposition::clean()
+{
+    for (int i = 0; i < capacity; ++i) {
+        table[i].flag = HASH_EMPTY;
+        table[i].score = 0;
+        table[i].bestMove = 0;
+        table[i].depth = 0;
     }
 }
 
@@ -209,7 +223,6 @@ void Transposition::AmmendHash(U64& hash, Move move, const Position& pos)
 
 const s_node* const Transposition::get(U64 hash) const
 {
-    //const s_node* node = &table[hash & capacity];
     const s_node* node = &table[hash % capacity];
     return node->zobrist == hash ? node : s_node::EMPTY;
 }

@@ -180,12 +180,31 @@ Rays::Rays()
         figurePseudoAttacks[KING][sq] = GetKingRays(ESquare(sq));
         pawnPseudoAttacks[WHITE][sq] = GetPawnRays(WHITE, ESquare(sq));
         pawnPseudoAttacks[BLACK][sq] = GetPawnRays(BLACK, ESquare(sq));
+
+        fileMask[sq] = 0;
+        passedPawnMask[WHITE][sq] = 0;
+        passedPawnMask[BLACK][sq] = 0;
     }
 
     for (int f = 0; f < 8; ++f) {
         for (int i = 0; i < 8; ++i) {
             assert(f + i * 8 < 64);
             fileMask[f + i * 8] = bitboards::A_FILE << f;
+        }
+    }
+
+    for (int f = 0; f < 8; f++) {
+        for (int i = 0; i < 8; ++i) {
+            passedPawnMask[WHITE][f + i * 8] |= rays[NORTH][f + i * 8];
+            passedPawnMask[BLACK][f + i * 8] |= rays[SOUTH][f + i * 8];
+            if (f != 0) {
+                passedPawnMask[WHITE][f + i * 8] |= rays[NORTH][f - 1 + i * 8];
+                passedPawnMask[BLACK][f + i * 8] |= rays[SOUTH][f - 1 + i * 8];
+            }
+            if (f != 7) {
+                passedPawnMask[WHITE][f + i * 8] |= rays[NORTH][f + 1 + i * 8];
+                passedPawnMask[BLACK][f + i * 8] |= rays[SOUTH][f + 1 + i * 8];
+            }
         }
     }
 }
